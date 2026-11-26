@@ -1,0 +1,248 @@
+// Modelo do banco stagio_db conforme o PDF de arquitetura (MariaDB / InnoDB / utf8mb4).
+// Diferenças em relação ao PDF e o motivo de cada uma: docs/banco-de-dados.md.
+//
+// Enums: no código usamos o nome em maiúsculas (INSTITUICAO_ENSINO); o @map grava no banco
+// exatamente o valor do PDF ('Instituição de ensino').
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================================
+// Núcleo de identidade, autenticação e controle de acesso
+// ============================================================
+
+enum NivelAcesso {
+  ESTUDANTE          @map("Estudante")
+  EMPRESA            @map("Empresa")
+  INSTITUICAO_ENSINO @map("Instituição de ensino")
+}
+
+model Permissao {
+  nivel_acesso         NivelAcesso @id
+  pode_criar_vagas     Boolean     @default(false)
+  pode_candidatar      Boolean     @default(false)
+  pode_ver_candidatos  Boolean     @default(false)
+  pode_validar_estagio Boolean     @default(false)
+
+  usuarios Usuario[]
+
+  @@map("permissoes")
+}
+
+model Usuario {
+  id              Int         @id @default(autoincrement())
+  usuario         String      @unique @db.VarChar(50)
+  senha           String      @db.VarChar(255)
+  data_nascimento DateTime    @db.Date
+  nome_completo   String      @db.VarChar(150)
+  telefone        String      @db.VarChar(20)
+  cpf             String      @unique @db.Char(11)
+  endereco        String?     @db.Text
+  email           String      @unique @db.VarChar(180)
+  nivel_acesso    NivelAcesso
+  criado_em       DateTime    @default(now()) @db.Timestamp(0)
+  atualizado_em   DateTime    @default(now()) @updatedAt @db.Timestamp(0)
+
+  permissao  Permissao   @relation(fields: [nivel_acesso], references: [nivel_acesso], onDelete: Restrict, onUpdate: Cascade, map: "fk_usuarios_permissoes")
+  empresa    Empresa?
+  pontuacoes Pontuacao[]
+
+  @@map("usuarios")
+}
+
+// ============================================================
+// Núcleo corporativo concedente
+// ============================================================
+
+model Empresa {
+  id                 Int      @id @default(autoincrement())
+  usuario_id         Int      @unique
+  razao_social       String   @db.VarChar(150)
+  nome_fantasia      String   @db.VarChar(100)
+  cnpj               String   @unique @db.VarChar(18)
+  inscricao_estadual String?  @db.VarChar(30)
+  ramo_atuacao       String?  @db.VarChar(80)
+  site               String?  @db.VarChar(100)
+  descricao_empresa  String?  @db.Text
+  telefone_comercial String   @db.VarChar(20)
+  email_contato      String   @db.VarChar(180)
+  nome_responsavel   String   @db.VarChar(100)
+  cargo_responsavel  String?  @db.VarChar(50)
+  cep                String   @db.VarChar(9)
+  logradouro         String   @db.VarChar(150)
+  numero             String   @db.VarChar(20)
+  complemento        String?  @db.VarChar(50)
+  bairro             String   @db.VarChar(100)
+  cidade             String   @db.VarChar(100)
+  estado             String   @db.Char(2)
+  criado_em          DateTime @default(now()) @db.Timestamp(0)
+  atualizado_em      DateTime @default(now()) @updatedAt @db.Timestamp(0)
+
+  usuario Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_empresas_usuarios")
+  vagas   Vaga[]
+
+  @@map("empresas")
+}
+
+// ============================================================
+// Núcleo de oferta de oportunidades e requisitos curriculares
+// ============================================================
+
+enum TipoModelo {
+  PRESENCIAL @map("Presencial")
+  HIBRIDO    @map("Híbrido")
+  REMOTO     @map("Remoto")
+}
+
+enum StatusVaga {
+  RASCUNHO  @map("Rascunho")
+  ABERTA    @map("Aberta")
+  PAUSADA   @map("Pausada")
+  ENCERRADA @map("Encerrada")
+}
+
+enum NivelFormacao {
+  ENSINO_MEDIO @map("Ensino Médio")
+  TECNICO      @map("Técnico")
+  TECNOLOGO    @map("Tecnólogo")
+  BACHARELADO  @map("Bacharelado")
+  LICENCIATURA @map("Licenciatura")
+}
+
+enum NivelIdioma {
+  BASICO        @map("Básico")
+  INTERMEDIARIO @map("Intermediário")
+  AVANCADO      @map("Avançado")
+  FLUENTE       @map("Fluente")
+}
+
+enum GrauCurso {
+  TECNICO       @map("Técnico")
+  GRADUACAO     @map("Graduação")
+  POS_GRADUACAO @map("Pós-Graduação")
+}
+
+model Vaga {
+  id                    Int        @id @default(autoincrement())
+  empresa_id            Int
+  titulo                String     @db.VarChar(120)
+  descricao             String     @db.Text
+  area_atuacao          String     @db.VarChar(80)
+  tipo_modelo           TipoModelo @default(PRESENCIAL)
+  carga_horaria_semanal Int        @db.UnsignedTinyInt
+  valor_bolsa           Decimal    @default(0.00) @db.Decimal(10, 2)
+  auxilio_transporte    Boolean    @default(true)
+  beneficios            String?    @db.Text
+  local_atuacao         String?    @db.VarChar(150)
+  quantidade_posicoes   Int        @default(1) @db.UnsignedSmallInt
+  status                StatusVaga @default(ABERTA)
+  data_limite_inscricao DateTime?  @db.Date
+  criado_em             DateTime   @default(now()) @db.Timestamp(0)
+  atualizado_em         DateTime   @default(now()) @updatedAt @db.Timestamp(0)
+
+  empresa              Empresa             @relation(fields: [empresa_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_vagas_empresas")
+  perfil_desejado      PerfilDesejado?
+  qualificacoes_cursos QualificacaoCurso[]
+  questionario         Questionario?
+  pontuacoes           Pontuacao[]
+
+  @@index([empresa_id], map: "fk_vagas_empresas")
+  @@index([status, criado_em])
+  @@map("vagas")
+}
+
+model PerfilDesejado {
+  id                           Int           @id @default(autoincrement())
+  vaga_id                      Int           @unique
+  semestre_minimo              Int?          @default(1) @db.UnsignedTinyInt
+  semestre_maximo              Int?          @db.UnsignedTinyInt
+  nivel_formacao               NivelFormacao
+  idioma_exigido               String?       @db.VarChar(50)
+  nivel_idioma                 NivelIdioma?
+  habilidades_tecnicas         String?       @db.Text
+  competencias_comportamentais String?       @db.Text
+  requisitos_obrigatorios      String?       @db.Text
+  requisitos_desejaveis        String?       @db.Text
+
+  vaga Vaga @relation(fields: [vaga_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_perfil_vagas")
+
+  @@map("perfil_desejado")
+}
+
+model QualificacaoCurso {
+  id          Int       @id @default(autoincrement())
+  vaga_id     Int
+  nome_curso  String    @db.VarChar(120)
+  grau        GrauCurso @default(GRADUACAO)
+  obrigatorio Boolean   @default(true)
+
+  vaga Vaga @relation(fields: [vaga_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_qualificacoes_vagas")
+
+  @@index([vaga_id], map: "fk_qualificacoes_vagas")
+  @@map("qualificacoes_cursos")
+}
+
+// ============================================================
+// Núcleo de avaliação técnica e triagem automatizada
+// ============================================================
+
+enum StatusAprovacao {
+  APROVADO   @map("Aprovado")
+  REPROVADO  @map("Reprovado")
+  EM_ANALISE @map("Em Analise")
+}
+
+model Questionario {
+  id                    Int      @id @default(autoincrement())
+  vaga_id               Int      @unique
+  titulo                String   @db.VarChar(150)
+  instrucoes            String?  @db.Text
+  nota_minima_aprovacao Decimal  @default(6.00) @db.Decimal(4, 2)
+  criado_em             DateTime @default(now()) @db.Timestamp(0)
+
+  vaga       Vaga        @relation(fields: [vaga_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_questionarios_vagas")
+  questoes   Questao[]
+  pontuacoes Pontuacao[]
+
+  @@map("questionarios")
+}
+
+/// enunciado guarda um JSON em texto: { pergunta, alternativas: { A, B, C, D }, correta } (seção 6.3 do PDF).
+/// A chave "correta" nunca sai da API para o estudante.
+model Questao {
+  id              Int     @id @default(autoincrement())
+  questionario_id Int
+  enunciado       String  @db.Text
+  peso_nota       Decimal @default(1.00) @db.Decimal(4, 2)
+
+  questionario Questionario @relation(fields: [questionario_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_questoes_questionarios")
+
+  @@index([questionario_id], map: "fk_questoes_questionarios")
+  @@map("questoes")
+}
+
+model Pontuacao {
+  id                   Int             @id @default(autoincrement())
+  vaga_id              Int
+  estudante_usuario_id Int
+  questionario_id      Int
+  nota_obtida          Decimal         @db.Decimal(4, 2)
+  pontuacao_afinidade  Decimal?        @db.Decimal(5, 2)
+  status_aprovacao     StatusAprovacao @default(EM_ANALISE)
+  data_conclusao       DateTime        @default(now()) @db.Timestamp(0)
+
+  vaga         Vaga         @relation(fields: [vaga_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_pontuacoes_vagas")
+  estudante    Usuario      @relation(fields: [estudante_usuario_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_pontuacoes_usuarios")
+  questionario Questionario @relation(fields: [questionario_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_pontuacoes_questionarios")
+
+  @@unique([vaga_id, estudante_usuario_id], map: "uq_estudante_vaga")
+  @@index([estudante_usuario_id], map: "fk_pontuacoes_usuarios")
+  @@index([questionario_id], map: "fk_pontuacoes_questionarios")
+  @@map("pontuacoes")
+}

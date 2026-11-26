@@ -1,0 +1,32 @@
+# Banco local de desenvolvimento. Senhas fixas de propósito: servem só para a máquina do dev.
+#
+# O PDF cita MariaDB 10.4.27, que saiu de suporte em 2024. Usamos a 11.4 (LTS),
+# e o schema não depende de nada que não exista na 10.4.
+services:
+  mariadb:
+    image: mariadb:11.4
+    container_name: startagio-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: startagio
+      MARIADB_DATABASE: stagio_db
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+
+  # Interface web do banco, a mesma ferramenta citada no PDF: http://localhost:8080
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: startagio-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb-data:

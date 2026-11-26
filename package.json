@@ -1,0 +1,21 @@
+{
+  "name": "startagio",
+  "private": true,
+  "packageManager": "pnpm@12.23.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @startagio/api --filter @startagio/web run dev",
+    "dev:api": "pnpm --filter @startagio/api dev",
+    "dev:web": "pnpm --filter @startagio/web dev",
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @startagio/api db:migrate",
+    "db:studio": "pnpm --filter @startagio/api db:studio"
+  }
+}

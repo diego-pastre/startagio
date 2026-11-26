@@ -1,0 +1,2 @@
+# Cliente gerado pelo Prisma (recriado no postinstall e em `pnpm db:generate`)
+/src/generated/
