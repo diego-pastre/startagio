@@ -10,6 +10,13 @@ export const NIVEL_ACESSO_LABEL: Record<NivelAcesso, string> = {
   INSTITUICAO_ENSINO: "Instituição de ensino",
 };
 
+/**
+ * Perfis que qualquer pessoa pode escolher no cadastro do site. A conta de instituição de ensino
+ * é criada à mão (ver docs/arquitetura.md), porque ela vê vagas em rascunho e vai validar estágios.
+ */
+export const NIVEIS_CADASTRO_PUBLICO = ["ESTUDANTE", "EMPRESA"] as const satisfies readonly NivelAcesso[];
+export type NivelCadastroPublico = (typeof NIVEIS_CADASTRO_PUBLICO)[number];
+
 export const TIPOS_MODELO = ["PRESENCIAL", "HIBRIDO", "REMOTO"] as const;
 export type TipoModelo = (typeof TIPOS_MODELO)[number];
 export const TIPO_MODELO_LABEL: Record<TipoModelo, string> = {
