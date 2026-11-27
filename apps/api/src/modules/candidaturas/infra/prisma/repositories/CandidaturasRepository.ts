@@ -48,7 +48,7 @@ const includeCandidato = {
       nome_completo: true,
       email: true,
       telefone: true,
-      cpf: true,
+      // CPF não entra: a empresa só precisa do contato (proteção de dados).
       perfil_estudante: { select: { curso: true, semestre_atual: true, instituicao_ensino: true } },
     },
   },

@@ -12,7 +12,7 @@ import type { ICandidaturasRepository } from "../../repositories/ICandidaturasRe
 
 /**
  * GET /api/vagas/:id/candidatos: ranking da vaga (Tela 4 do PDF), só para a empresa dona.
- * O contato do estudante (CPF, e-mail, telefone) só aparece aqui, para quem publicou a vaga.
+ * O contato do estudante (e-mail e telefone) só aparece aqui, para quem publicou a vaga. O CPF nunca sai da API.
  */
 @injectable()
 export class ListCandidatosService {

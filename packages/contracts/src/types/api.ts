@@ -165,7 +165,8 @@ export interface CandidatoDaVaga {
   id: number;
   /** Posição no ranking completo da vaga: nota, depois afinidade, depois quem terminou antes. */
   posicao: number;
-  estudante: { id: number; nome_completo: string; email: string; telefone: string; cpf: string };
+  /** Só o contato: o CPF do estudante não é mostrado para a empresa. */
+  estudante: { id: number; nome_completo: string; email: string; telefone: string };
   perfil: { curso: string; semestre_atual: number; instituicao_ensino: string | null } | null;
   nota_obtida: number;
   pontuacao_afinidade: number | null;

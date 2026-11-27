@@ -98,7 +98,6 @@ export class FakeCandidaturasRepository implements ICandidaturasRepository {
             nome_completo: `Estudante ${item.estudante_usuario_id}`,
             email: `estudante${item.estudante_usuario_id}@exemplo.com`,
             telefone: "31999990000",
-            cpf: "52998224725",
           },
           perfil: null,
           nota_obtida: item.nota_obtida,
