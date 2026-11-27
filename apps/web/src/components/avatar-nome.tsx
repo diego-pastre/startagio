@@ -12,7 +12,7 @@ const TAMANHOS = {
 interface AvatarNomeProps {
   nome: string;
   tamanho?: keyof typeof TAMANHOS;
-  /** Pessoa usa círculo; empresa usa quadrado arredondado, como logo. */
+  /** Pessoa usa círculo; empresa usa quadrado, como logo. */
   forma?: "circulo" | "quadrado";
   className?: string;
 }
@@ -27,7 +27,7 @@ export function AvatarNome({ nome, tamanho = "md", forma = "circulo", className 
         "flex shrink-0 items-center justify-center font-bold tracking-tight select-none",
         "bg-[oklch(0.92_0.06_var(--matiz))] text-[oklch(0.38_0.13_var(--matiz))]",
         "dark:bg-[oklch(0.36_0.08_var(--matiz))] dark:text-[oklch(0.92_0.06_var(--matiz))]",
-        forma === "circulo" ? "rounded-full" : "rounded-xl",
+        forma === "circulo" ? "rounded-full" : "rounded-md",
         TAMANHOS[tamanho],
         className,
       )}

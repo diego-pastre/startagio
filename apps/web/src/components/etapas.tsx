@@ -29,19 +29,21 @@ export function Etapas({ titulos, atual, aoSelecionar, todasLiberadas = false }:
               >
                 <span
                   className={cn(
-                    "flex size-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold text-muted-foreground transition-colors",
-                    ativa && "border-primary bg-primary text-primary-foreground ring-4 ring-primary/15",
-                    concluida && "border-primary bg-marca-suave text-primary",
+                    "flex size-8 shrink-0 items-center justify-center rounded-[3px] border-[1.5px] font-heading text-sm font-bold text-muted-foreground transition-colors",
+                    ativa && "border-foreground bg-foreground text-background",
+                    concluida && "border-primary/60 text-primary",
                   )}
                 >
                   {concluida ? <CheckIcon className="size-4" /> : indice + 1}
                 </span>
                 <span className={cn("hidden whitespace-nowrap sm:inline", ativa ? "font-semibold" : "text-muted-foreground")}>
-                  {titulo}
+                  <span className={cn(ativa && "marca-texto")}>{titulo}</span>
                 </span>
               </button>
               {indice < titulos.length - 1 && (
-                <span className={cn("h-0.5 flex-1 rounded-full bg-border transition-colors", concluida && "bg-primary")} />
+                <span
+                  className={cn("h-0 flex-1 border-t-[1.5px] border-dashed transition-colors", concluida && "border-solid border-primary/60")}
+                />
               )}
             </li>
           );

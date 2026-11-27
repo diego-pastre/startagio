@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { ALTERNATIVAS, type Alternativa, type Candidatura, type ProvaDaVaga, type QuestaoDaProva } from "@startagio/contracts";
+import { Cartaz } from "@/components/cartaz";
 import { Carregando } from "@/components/estados";
 import { LinkVoltar } from "@/components/link-voltar";
 import {
@@ -146,31 +147,29 @@ function Formulario({
 
   return (
     <Moldura topo={topo}>
-      <header className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
-        <div className="relative flex flex-col gap-1 bg-gradiente-marca px-5 py-6 text-white sm:px-6">
-          <div aria-hidden className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-white/10 blur-2xl" />
-          <p className="relative text-xs font-semibold tracking-wider text-white/75 uppercase">
-            Prova · {prova.vaga.empresa.nome_fantasia}
-          </p>
-          <h1 className="relative text-2xl font-extrabold tracking-tight">{prova.vaga.titulo}</h1>
-          <p className="relative text-sm text-white/85">{prova.titulo}</p>
+      {/* A folha da prova presa no mural, como as vagas. */}
+      <Cartaz className="flex flex-col gap-5 px-5 pt-9 pb-6 text-sm sm:px-7">
+        <div className="flex flex-col gap-1.5">
+          <p className="font-medium text-muted-foreground">Prova da {prova.vaga.empresa.nome_fantasia}</p>
+          <h1 className="text-[1.9rem] leading-[1.05] font-bold text-balance sm:text-[2.3rem]">{prova.vaga.titulo}</h1>
+          <p className="text-base text-muted-foreground">{prova.titulo}</p>
         </div>
-        <div className="flex flex-col gap-4 px-5 py-5 text-sm sm:px-6">
-          {prova.instrucoes && <p className="leading-relaxed whitespace-pre-line">{prova.instrucoes}</p>}
-          <div className="flex flex-wrap gap-2">
-            <Pilula icone={<ClipboardListIcon />}>
-              {prova.questoes.length} {prova.questoes.length === 1 ? "questão" : "questões"}
-            </Pilula>
-            <Pilula icone={<TargetIcon />}>Nota mínima {formatarNota(prova.nota_minima_aprovacao)}</Pilula>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Você só pode enviar uma vez. Questões com peso maior valem mais na nota.
-          </p>
+        {prova.instrucoes && (
+          <p className="border-t border-dashed pt-4 leading-relaxed whitespace-pre-line">{prova.instrucoes}</p>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Pilula icone={<ClipboardListIcon />}>
+            {prova.questoes.length} {prova.questoes.length === 1 ? "questão" : "questões"}
+          </Pilula>
+          <Pilula icone={<TargetIcon />}>Nota mínima {formatarNota(prova.nota_minima_aprovacao)}</Pilula>
         </div>
-      </header>
+        <p className="text-xs text-muted-foreground">
+          Você só pode enviar uma vez. Questões com peso maior valem mais na nota.
+        </p>
+      </Cartaz>
 
       {/* Barra de progresso fixa logo abaixo do topo do site. */}
-      <div className="sticky top-16 z-30 -mx-1 rounded-2xl border bg-card/95 px-4 py-3 backdrop-blur sombra-cartao">
+      <div className="sticky top-16 z-30 -mx-1 rounded-md border bg-card/95 px-4 py-3 backdrop-blur sombra-cartao">
         <div className="flex items-center justify-between gap-3 text-sm">
           <span className="font-semibold">{progresso.texto}</span>
           <span className="text-muted-foreground">{progresso.porcentagem}%</span>
@@ -194,7 +193,7 @@ function Formulario({
         ))}
       </ol>
 
-      <div className="flex flex-col items-center gap-2 rounded-2xl border bg-card p-5 text-center sombra-cartao">
+      <div className="flex flex-col items-center gap-3 rounded-md border border-dashed bg-card p-5 text-center">
         <p className="text-sm text-muted-foreground">
           {completa ? "Tudo respondido. Confira antes de enviar." : `Responda todas as questões para enviar (${progresso.texto}).`}
         </p>
@@ -237,15 +236,15 @@ function CartaoQuestao({ questao, numero, total, marcada, semResposta, aoMarcar 
     <li
       id={`questao-${questao.id}`}
       className={cn(
-        "scroll-mt-40 rounded-2xl border bg-card p-5 sombra-cartao transition-colors sm:p-6",
+        "scroll-mt-40 rounded-md border bg-card p-5 sombra-cartao transition-colors sm:p-6",
         semResposta && "border-destructive/60 ring-2 ring-destructive/15",
       )}
     >
-      <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="font-semibold text-primary">
-          Questão {numero} de {total}
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="font-heading font-bold">
+          Questão {numero} <span className="font-normal text-muted-foreground">de {total}</span>
         </span>
-        <span className="rounded-full bg-muted px-2.5 py-0.5 font-medium text-muted-foreground">
+        <span className="rounded-[3px] border px-2 py-0.5 text-xs font-medium text-muted-foreground">
           Peso {formatarNota(questao.peso_nota).replace(",00", "")}
         </span>
       </div>
@@ -266,16 +265,17 @@ function CartaoQuestao({ questao, numero, total, marcada, semResposta, aoMarcar 
               key={letra}
               htmlFor={id}
               className={cn(
-                "relative flex cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 text-sm transition-colors hover:bg-muted/60",
+                "relative flex cursor-pointer items-center gap-3 rounded-md border px-3.5 py-3 text-sm transition-colors hover:bg-muted/60",
                 // O rádio fica invisível (o sr-only perde para o "relative" do componente): o foco aparece no cartão inteiro.
                 "has-focus-visible:ring-3 has-focus-visible:ring-ring/40",
-                ativa && "border-primary bg-marca-suave hover:bg-marca-suave",
+                ativa && "border-primary/60 bg-marca-suave hover:bg-marca-suave",
               )}
             >
               <RadioGroupItem value={letra} id={id} className="absolute size-px opacity-0" />
+              {/* Bolinha de gabarito: fica preenchida quando a alternativa é marcada. */}
               <span
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-lg border text-sm font-bold text-muted-foreground transition-colors",
+                  "flex size-8 shrink-0 items-center justify-center rounded-full border-[1.5px] border-foreground/30 font-heading text-sm font-bold text-muted-foreground transition-colors",
                   ativa && "border-primary bg-primary text-primary-foreground",
                 )}
               >
@@ -297,7 +297,7 @@ function Moldura({ topo, children }: { topo: ReactNode; children: ReactNode }) {
 
 function Aviso({ icone, titulo, texto, children }: { icone: ReactNode; titulo: string; texto: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col items-center gap-4 rounded-2xl border bg-card px-6 py-12 text-center sombra-cartao">
+    <section className="flex flex-col items-center gap-4 rounded-md border bg-card px-6 py-12 text-center sombra-cartao">
       <span className="flex size-14 items-center justify-center rounded-full bg-marca-suave text-primary [&_svg]:size-6">
         {icone}
       </span>
@@ -312,7 +312,7 @@ function Aviso({ icone, titulo, texto, children }: { icone: ReactNode; titulo: s
 
 function Pilula({ icone, children }: { icone: ReactNode; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground [&_svg]:size-3.5">
+    <span className="inline-flex items-center gap-1.5 rounded-[3px] border px-2.5 py-0.5 text-sm font-medium text-muted-foreground [&_svg]:size-3.5">
       {icone}
       {children}
     </span>

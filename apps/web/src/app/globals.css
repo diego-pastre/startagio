@@ -20,7 +20,8 @@
   --color-aviso-foreground: var(--aviso-foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -59,59 +60,66 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * IDENTIDADE "MURAL DO CORREDOR": o mural de estágios da faculdade, com o material escolar do estudante.
+ *   papel ............ fundo da página
+ *   grafite .......... texto
+ *   caneta azul ...... ações e links (--marca)
+ *   marca-texto ...... o que merece atenção (--destaque / --marca-texto)
+ *   caneta vermelha .. erros (--destructive)
+ *   fita adesiva ..... prende cada vaga no mural; a cor sai da área de atuação
+ * Os nomes antigos (marca, destaque, sombra-cartao...) continuam valendo para o resto do código.
+ */
 :root {
-  /*
-   * COR DA MARCA: a cor oficial ainda não foi definida.
-   * O tema inteiro sai destes dois números (matiz do OKLCH, de 0 a 360).
-   * Troque --marca-matiz e o site muda de cor. Ex.: 150 verde, 200 azul-petróleo, 25 coral.
-   */
-  --marca-matiz: 262;
-  --destaque-matiz: 45;
+  --marca-matiz: 266;
+  --destaque-matiz: 106;
 
-  --marca: oklch(0.54 0.2 var(--marca-matiz));
-  --marca-forte: oklch(0.42 0.19 var(--marca-matiz));
-  --marca-suave: oklch(0.95 0.035 var(--marca-matiz));
-  --marca-suave-foreground: oklch(0.42 0.17 var(--marca-matiz));
-  --destaque: oklch(0.75 0.16 var(--destaque-matiz));
-  --sucesso: oklch(0.6 0.15 155);
-  --sucesso-suave: oklch(0.95 0.045 155);
-  --sucesso-foreground: oklch(0.42 0.11 155);
-  --aviso: oklch(0.75 0.15 75);
+  --marca: oklch(0.47 0.2 var(--marca-matiz));
+  --marca-forte: oklch(0.38 0.18 var(--marca-matiz));
+  --marca-suave: oklch(0.95 0.03 var(--marca-matiz));
+  --marca-suave-foreground: oklch(0.4 0.17 var(--marca-matiz));
+  --destaque: oklch(0.92 0.17 var(--destaque-matiz));
+  --marca-texto: oklch(0.93 0.16 var(--destaque-matiz) / 0.9);
+  --sucesso: oklch(0.55 0.13 158);
+  --sucesso-suave: oklch(0.95 0.04 158);
+  --sucesso-foreground: oklch(0.4 0.1 158);
+  --aviso: oklch(0.74 0.15 70);
   --aviso-suave: oklch(0.96 0.05 85);
-  --aviso-foreground: oklch(0.47 0.11 65);
-  /* Faixa do topo dos cartões de perfil e do painel do login. */
-  --gradiente-marca: linear-gradient(
-    120deg,
-    oklch(0.46 0.2 var(--marca-matiz)) 0%,
-    oklch(0.58 0.21 calc(var(--marca-matiz) + 28)) 55%,
-    oklch(0.74 0.15 var(--destaque-matiz)) 130%
-  );
+  --aviso-foreground: oklch(0.46 0.11 60);
+  /* Sem degradê: tinta chapada, como caneta no papel. */
+  --gradiente-marca: linear-gradient(var(--marca), var(--marca));
+  /* Linhas do caderno quadriculado (só no login e no cadastro). */
+  --linha-caderno: oklch(0.6 0.11 250 / 0.13);
+  /* Fita adesiva: a matiz vem da área da vaga; aqui ficam luz, cor e transparência. */
+  --fita-luz: 0.88;
+  --fita-croma: 0.12;
+  --fita-alfa: 0.85;
 
-  /* Fundo levemente tingido pela marca, com cartões brancos por cima (como numa rede social). */
-  --background: oklch(0.972 0.006 var(--marca-matiz));
-  --foreground: oklch(0.21 0.025 var(--marca-matiz));
+  --background: oklch(0.966 0.004 250);
+  --foreground: oklch(0.24 0.018 265);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.025 var(--marca-matiz));
+  --card-foreground: oklch(0.24 0.018 265);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.025 var(--marca-matiz));
+  --popover-foreground: oklch(0.24 0.018 265);
   --primary: var(--marca);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.012 var(--marca-matiz));
-  --secondary-foreground: oklch(0.3 0.04 var(--marca-matiz));
-  --muted: oklch(0.955 0.01 var(--marca-matiz));
-  --muted-foreground: oklch(0.52 0.025 var(--marca-matiz));
+  --secondary: oklch(0.94 0.006 260);
+  --secondary-foreground: oklch(0.28 0.02 265);
+  --muted: oklch(0.945 0.005 260);
+  --muted-foreground: oklch(0.5 0.015 265);
   --accent: var(--marca-suave);
   --accent-foreground: var(--marca-suave-foreground);
-  --destructive: oklch(0.577 0.215 27.325);
-  --border: oklch(0.915 0.012 var(--marca-matiz));
-  --input: oklch(0.88 0.015 var(--marca-matiz));
-  --ring: oklch(0.62 0.17 var(--marca-matiz));
-  --chart-1: oklch(0.54 0.2 var(--marca-matiz));
-  --chart-2: oklch(0.75 0.16 var(--destaque-matiz));
-  --chart-3: oklch(0.6 0.15 155);
-  --chart-4: oklch(0.7 0.12 calc(var(--marca-matiz) + 40));
-  --chart-5: oklch(0.45 0.08 var(--marca-matiz));
-  --radius: 0.75rem;
+  --destructive: oklch(0.56 0.21 27);
+  --border: oklch(0.885 0.008 260);
+  --input: oklch(0.86 0.01 260);
+  --ring: oklch(0.6 0.17 var(--marca-matiz));
+  --chart-1: oklch(0.47 0.2 var(--marca-matiz));
+  --chart-2: oklch(0.8 0.16 var(--destaque-matiz));
+  --chart-3: oklch(0.55 0.13 158);
+  --chart-4: oklch(0.65 0.15 27);
+  --chart-5: oklch(0.45 0.05 265);
+  /* Papel tem canto vivo: raio pequeno em tudo (os rounded-* do código saem daqui). */
+  --radius: 0.375rem;
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--marca);
@@ -122,49 +130,49 @@
   --sidebar-ring: var(--ring);
 }
 
+/* Tema escuro: o mural vira lousa. */
 .dark {
-  --marca: oklch(0.7 0.16 var(--marca-matiz));
-  --marca-forte: oklch(0.8 0.12 var(--marca-matiz));
+  --marca: oklch(0.72 0.15 var(--marca-matiz));
+  --marca-forte: oklch(0.82 0.11 var(--marca-matiz));
   --marca-suave: oklch(0.3 0.07 var(--marca-matiz));
-  --marca-suave-foreground: oklch(0.86 0.08 var(--marca-matiz));
-  --destaque: oklch(0.8 0.14 var(--destaque-matiz));
-  --sucesso: oklch(0.72 0.14 155);
-  --sucesso-suave: oklch(0.3 0.06 155);
-  --sucesso-foreground: oklch(0.85 0.1 155);
+  --marca-suave-foreground: oklch(0.87 0.07 var(--marca-matiz));
+  --destaque: oklch(0.88 0.16 var(--destaque-matiz));
+  --marca-texto: oklch(0.62 0.13 var(--destaque-matiz) / 0.42);
+  --sucesso: oklch(0.72 0.14 158);
+  --sucesso-suave: oklch(0.3 0.06 158);
+  --sucesso-foreground: oklch(0.85 0.1 158);
   --aviso: oklch(0.8 0.13 75);
   --aviso-suave: oklch(0.32 0.06 75);
   --aviso-foreground: oklch(0.88 0.1 80);
-  --gradiente-marca: linear-gradient(
-    120deg,
-    oklch(0.36 0.15 var(--marca-matiz)) 0%,
-    oklch(0.45 0.17 calc(var(--marca-matiz) + 28)) 60%,
-    oklch(0.55 0.12 var(--destaque-matiz)) 140%
-  );
+  --linha-caderno: oklch(0.75 0.08 250 / 0.07);
+  --fita-luz: 0.6;
+  --fita-croma: 0.09;
+  --fita-alfa: 0.72;
 
-  --background: oklch(0.16 0.02 var(--marca-matiz));
-  --foreground: oklch(0.95 0.01 var(--marca-matiz));
-  --card: oklch(0.21 0.025 var(--marca-matiz));
-  --card-foreground: oklch(0.95 0.01 var(--marca-matiz));
-  --popover: oklch(0.23 0.028 var(--marca-matiz));
-  --popover-foreground: oklch(0.95 0.01 var(--marca-matiz));
+  --background: oklch(0.175 0.012 265);
+  --foreground: oklch(0.94 0.008 260);
+  --card: oklch(0.215 0.014 265);
+  --card-foreground: oklch(0.94 0.008 260);
+  --popover: oklch(0.23 0.016 265);
+  --popover-foreground: oklch(0.94 0.008 260);
   --primary: var(--marca);
   --primary-foreground: oklch(0.17 0.03 var(--marca-matiz));
-  --secondary: oklch(0.28 0.03 var(--marca-matiz));
-  --secondary-foreground: oklch(0.92 0.015 var(--marca-matiz));
-  --muted: oklch(0.26 0.025 var(--marca-matiz));
-  --muted-foreground: oklch(0.72 0.025 var(--marca-matiz));
+  --secondary: oklch(0.27 0.016 265);
+  --secondary-foreground: oklch(0.92 0.01 260);
+  --muted: oklch(0.25 0.014 265);
+  --muted-foreground: oklch(0.7 0.015 260);
   --accent: var(--marca-suave);
   --accent-foreground: var(--marca-suave-foreground);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.15 var(--marca-matiz));
-  --chart-1: oklch(0.7 0.16 var(--marca-matiz));
-  --chart-2: oklch(0.8 0.14 var(--destaque-matiz));
-  --chart-3: oklch(0.72 0.14 155);
-  --chart-4: oklch(0.75 0.1 calc(var(--marca-matiz) + 40));
-  --chart-5: oklch(0.6 0.06 var(--marca-matiz));
-  --sidebar: oklch(0.21 0.025 var(--marca-matiz));
+  --destructive: oklch(0.7 0.18 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.66 0.14 var(--marca-matiz));
+  --chart-1: oklch(0.72 0.15 var(--marca-matiz));
+  --chart-2: oklch(0.85 0.15 var(--destaque-matiz));
+  --chart-3: oklch(0.72 0.14 158);
+  --chart-4: oklch(0.7 0.16 25);
+  --chart-5: oklch(0.6 0.04 265);
+  --sidebar: oklch(0.215 0.014 265);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--marca);
   --sidebar-primary-foreground: oklch(0.17 0.03 var(--marca-matiz));
@@ -184,29 +192,106 @@
   html {
     @apply font-sans;
   }
+  /* Títulos na Bricolage Grotesque: mais apertada e com personalidade; o texto fica na Mona Sans. */
   h1,
   h2,
   h3 {
     @apply font-heading;
+    letter-spacing: -0.018em;
   }
 }
 
 /* Classes próprias com @utility: assim aceitam variantes como hover: e dark:. */
 
-/* Faixa colorida do topo dos cartões e do painel de boas-vindas. */
+/* Mantida para o código antigo: hoje é tinta azul chapada. */
 @utility bg-gradiente-marca {
   background-image: var(--gradiente-marca);
 }
 
-/* Sombra suave de cartão de rede social; a forte é para o hover. */
+/* Superfícies comuns: só um filete embaixo, a borda faz o resto. */
 @utility sombra-cartao {
-  box-shadow:
-    0 1px 2px oklch(0.2 0.03 var(--marca-matiz) / 6%),
-    0 2px 8px -2px oklch(0.2 0.03 var(--marca-matiz) / 6%);
+  box-shadow: 0 1px 0 oklch(0.24 0.02 265 / 5%);
 }
 
 @utility sombra-cartao-forte {
   box-shadow:
-    0 2px 4px oklch(0.2 0.03 var(--marca-matiz) / 6%),
-    0 12px 28px -8px oklch(0.2 0.05 var(--marca-matiz) / 18%);
+    0 1px 0 oklch(0.24 0.02 265 / 6%),
+    0 12px 24px -16px oklch(0.24 0.03 265 / 30%);
+}
+
+/* Cartaz preso no mural: o papel descola um pouco embaixo. */
+@utility sombra-papel {
+  box-shadow:
+    0 1px 1px oklch(0.24 0.02 265 / 6%),
+    0 10px 18px -14px oklch(0.24 0.03 265 / 32%);
+}
+
+/* Caderno quadriculado. */
+@utility papel-quadriculado {
+  background-image:
+    linear-gradient(var(--linha-caderno) 1px, transparent 1px),
+    linear-gradient(90deg, var(--linha-caderno) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
+/* Traço de marca-texto atrás do texto, com as pontas inclinadas como a caneta. */
+@utility marca-texto {
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.2em,
+    var(--marca-texto) 0.32em,
+    var(--marca-texto) calc(100% - 0.32em),
+    transparent calc(100% - 0.2em)
+  );
+  background-size: 100% 0.62em;
+  background-position: 0 88%;
+  background-repeat: no-repeat;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.14em;
+}
+
+/* Pedaço de fita adesiva com as pontas rasgadas. A cor vem de --matiz (área da vaga). */
+@utility fita {
+  position: absolute;
+  top: -0.7rem;
+  left: 50%;
+  width: 5.75rem;
+  height: 1.45rem;
+  translate: -50% 0;
+  rotate: -2.5deg;
+  pointer-events: none;
+  background-color: oklch(var(--fita-luz) var(--fita-croma) var(--matiz, 106) / var(--fita-alfa));
+  clip-path: polygon(
+    0 8%, 4% 0, 12% 5%, 22% 0, 78% 2%, 90% 0, 96% 6%, 100% 0,
+    98% 50%, 100% 100%, 92% 95%, 84% 100%, 16% 97%, 8% 100%, 3% 94%, 0 100%, 2% 50%
+  );
+}
+
+/* Único movimento automático do site: os cartazes do login sendo presos no mural. */
+@keyframes prender-cartaz {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) rotate(calc(var(--giro, 0deg) - 4deg));
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--giro, 0deg));
+  }
+}
+
+@utility animar-prender {
+  animation: prender-cartaz 620ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  animation-delay: var(--atraso, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animar-prender {
+    animation: none;
+    transform: rotate(var(--giro, 0deg));
+  }
 }

@@ -8,6 +8,7 @@ import { useForm, type DefaultValues } from "react-hook-form";
 import { toast } from "sonner";
 import { novaVagaSchema, type NovaVagaData, type NovaVagaInput } from "@startagio/contracts";
 import { Etapas } from "@/components/etapas";
+import { CabecalhoDaPagina } from "@/components/layout/cabecalho-pagina";
 import { LinkVoltar } from "@/components/link-voltar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -96,29 +97,21 @@ export function AssistenteVaga({ modo }: { modo: ModoDoAssistente }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
       <LinkVoltar href={voltarPara} rotulo={edicao ? "Voltar para a vaga" : "Minhas vagas"} />
 
-      <header className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
-        <div className="bg-gradiente-marca px-5 py-5 text-white sm:px-6">
-          <p className="text-xs font-semibold tracking-wider text-white/75 uppercase">
-            Etapa {etapa + 1} de {ETAPAS.length}
-          </p>
-          <h1 className="text-2xl font-extrabold tracking-tight">{edicao ? "Editar vaga" : "Nova vaga"}</h1>
-          <p className="text-sm text-white/80">
-            {edicao ? edicao.titulo : "Quanto mais clara a vaga, melhores os candidatos."}
-          </p>
-        </div>
-        <div className="px-5 py-4 sm:px-6">
-          {/* Na edição tudo já está preenchido: dá para pular direto para qualquer etapa. */}
-          <Etapas
-            titulos={ETAPAS.map((item) => item.titulo)}
-            atual={etapa}
-            aoSelecionar={irPara}
-            todasLiberadas={Boolean(edicao)}
-          />
-        </div>
-      </header>
+      <CabecalhoDaPagina
+        titulo={edicao ? "Editar vaga" : "Nova vaga"}
+        descricao={edicao ? edicao.titulo : "Quanto mais clara a vaga, melhores os candidatos."}
+      />
+
+      {/* Na edição tudo já está preenchido: dá para pular direto para qualquer etapa. */}
+      <Etapas
+        titulos={ETAPAS.map((item) => item.titulo)}
+        atual={etapa}
+        aoSelecionar={irPara}
+        todasLiberadas={Boolean(edicao)}
+      />
 
       <Card>
         {/* Enter dentro de um campo não envia: o envio é só pelos botões do rodapé. */}

@@ -43,7 +43,7 @@ export function NotaCircular({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn("leading-none font-extrabold tracking-tight", tamanho === "lg" ? "text-3xl" : "text-base")}>
+        <span className={cn("font-heading leading-none font-bold tracking-tight", tamanho === "lg" ? "text-4xl" : "text-base")}>
           {formatarNota(nota)}
         </span>
         {tamanho === "lg" && <span className="mt-1 text-xs text-muted-foreground">de 10</span>}

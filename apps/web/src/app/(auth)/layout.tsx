@@ -6,20 +6,21 @@ import { inicioDoPerfil } from "@/lib/rotas";
 import { getUsuarioAtual } from "@/lib/sessao";
 import { PainelBoasVindas } from "./painel-boas-vindas";
 
+/** Login e cadastro sobre papel quadriculado: o formulário fica preso no mural, ao lado dos cartazes. */
 export default function AuthLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="grid flex-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+    <div className="flex flex-1 flex-col papel-quadriculado">
       <Suspense fallback={null}>
         <SairSeJaLogado />
       </Suspense>
-      <PainelBoasVindas />
-      <main className="relative flex flex-col items-center justify-center bg-card px-4 py-12 sm:px-10">
-        <div className="absolute top-4 right-4">
-          <AlternarTema />
-        </div>
-        <Logo className="mb-8 lg:hidden" />
-        {children}
-      </main>
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-8">
+        <Logo />
+        <AlternarTema />
+      </header>
+      <div className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-x-16 gap-y-12 px-5 pt-4 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <PainelBoasVindas />
+        <main className="flex justify-center lg:justify-end">{children}</main>
+      </div>
     </div>
   );
 }
