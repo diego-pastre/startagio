@@ -1,20 +1,13 @@
 "use client";
 
-import {
-  BriefcaseBusinessIcon,
-  CalendarClockIcon,
-  ListChecksIcon,
-  MegaphoneIcon,
-  PlusIcon,
-  SparklesIcon,
-  UsersIcon,
-} from "lucide-react";
+import { BriefcaseBusinessIcon, CalendarClockIcon, PlusIcon, SearchXIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { formatarData, TIPO_MODELO_LABEL, type StatusVaga } from "@startagio/contracts";
-import { CartaoDicas } from "@/components/layout/cartao-dicas";
-import { CartaoPerfil } from "@/components/layout/cartao-perfil";
-import { GradeRede } from "@/components/layout/grade-rede";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState, type CSSProperties } from "react";
+import { filtrosMinhasVagasSchema, formatarData, TIPO_MODELO_LABEL, type StatusVaga } from "@startagio/contracts";
+import { CampoDeBusca } from "@/components/filtros";
+import { AvisoPerfilPendente } from "@/components/layout/aviso-perfil-pendente";
+import { CabecalhoDaPagina } from "@/components/layout/cabecalho-pagina";
 import { Paginacao } from "@/components/paginacao";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -25,7 +18,9 @@ import { AcoesStatusVaga } from "@/components/vagas/acoes-status-vaga";
 import { StatusVagaBadge } from "@/components/vagas/status-vaga-badge";
 import { useMinhasVagas } from "@/domains/vagas/hooks";
 import { mensagemDeErro } from "@/lib/api";
+import { atualizarFiltrosNaUrl } from "@/lib/filtros-na-url";
 import { cn } from "@/lib/utils";
+import { matizDoNome } from "@/utils/avatar";
 import { textoDaBolsa } from "@/utils/vagas";
 
 type Aba = StatusVaga | "TODAS";
@@ -38,20 +33,41 @@ const ABAS: { valor: Aba; rotulo: string }[] = [
   { valor: "ENCERRADA", rotulo: "Encerradas" },
 ];
 
+/**
+ * "Minhas vagas" da empresa: a busca, a situação (abas) e a página ficam na URL, como no mural.
+ * Recarregar a página ou voltar do detalhe da vaga mantém o que estava filtrado.
+ */
 export function MinhasVagas() {
-  const [aba, setAba] = useState<Aba>("TODAS");
-  const [pagina, setPagina] = useState(1);
-  const { data, isPending, isError, error, refetch, isPlaceholderData } = useMinhasVagas({
-    status: aba === "TODAS" ? undefined : aba,
-    pagina,
-  });
+  const parametros = useSearchParams();
+  const filtros = filtrosMinhasVagasSchema.parse(Object.fromEntries(parametros.entries()));
+  const { data, isPending, isError, error, refetch, isPlaceholderData } = useMinhasVagas(filtros);
+  const [busca, setBusca] = useState(filtros.busca ?? "");
+  const aba: Aba = filtros.status ?? "TODAS";
+
+  // A busca vai para a URL 400 ms depois que a pessoa para de digitar.
+  useEffect(() => {
+    const termo = busca.trim() || undefined;
+    if (termo === filtros.busca) return;
+    const temporizador = setTimeout(() => atualizarFiltrosNaUrl({ busca: termo }), 400);
+    return () => clearTimeout(temporizador);
+  }, [busca, filtros.busca]);
+
+  function limparBusca() {
+    setBusca("");
+    atualizarFiltrosNaUrl({ busca: undefined });
+  }
+
+  function irParaPagina(pagina: number) {
+    atualizarFiltrosNaUrl({}, pagina);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   let conteudo;
   if (isPending) {
     conteudo = (
       <div className="flex flex-col gap-3 p-5">
         {[1, 2, 3].map((linha) => (
-          <Skeleton key={linha} className="h-16 w-full rounded-xl" />
+          <Skeleton key={linha} className="h-16 w-full rounded-md" />
         ))}
       </div>
     );
@@ -67,6 +83,23 @@ export function MinhasVagas() {
           </AlertDescription>
         </Alert>
       </div>
+    );
+  } else if (data.total === 0 && filtros.busca) {
+    conteudo = (
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <SearchXIcon />
+          </EmptyMedia>
+          <EmptyTitle>Nenhuma vaga encontrada para “{filtros.busca}”</EmptyTitle>
+          <EmptyDescription>A busca procura no título e na área da vaga.</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button variant="outline" onClick={limparBusca}>
+            Limpar busca
+          </Button>
+        </EmptyContent>
+      </Empty>
     );
   } else if (data.total === 0) {
     conteudo = (
@@ -97,18 +130,23 @@ export function MinhasVagas() {
       <ul className={cn("flex flex-col divide-y transition-opacity", isPlaceholderData && "opacity-60")}>
         {data.dados.map((vaga) => (
           <li key={vaga.id} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/40">
-            <span className="hidden size-11 shrink-0 items-center justify-center rounded-xl bg-marca-suave text-marca-suave-foreground sm:flex">
-              <BriefcaseBusinessIcon className="size-5" />
-            </span>
+            {/* A mesma cor da fita do cartaz no mural, para a empresa reconhecer a vaga. */}
+            <span
+              aria-hidden
+              style={{ "--matiz": matizDoNome(vaga.area_atuacao) } as CSSProperties}
+              className="h-11 w-1.5 shrink-0 rounded-full bg-[oklch(var(--fita-luz)_calc(var(--fita-croma)*1.6)_var(--matiz))]"
+            />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <Link
                 href={`/empresa/vagas/${vaga.id}`}
-                className="line-clamp-2 font-semibold underline-offset-4 hover:text-primary hover:underline"
+                className="line-clamp-2 font-heading text-lg leading-tight font-bold underline-offset-4 hover:text-primary hover:underline"
               >
                 {vaga.titulo}
               </Link>
-              <p className="text-xs text-muted-foreground">
-                {vaga.area_atuacao} · {TIPO_MODELO_LABEL[vaga.tipo_modelo]} · {textoDaBolsa(vaga.valor_bolsa)}
+              <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                <span>{vaga.area_atuacao}</span>
+                <span>{TIPO_MODELO_LABEL[vaga.tipo_modelo]}</span>
+                <span className="font-medium text-foreground">{textoDaBolsa(vaga.valor_bolsa)}</span>
               </p>
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
@@ -133,54 +171,36 @@ export function MinhasVagas() {
   }
 
   return (
-    <GradeRede
-      esquerda={<CartaoPerfil />}
-      direita={
-        <CartaoDicas
-          titulo="Atraia bons candidatos"
-          dicas={[
-            {
-              icone: SparklesIcon,
-              titulo: "Título claro vende a vaga",
-              texto: "\"Estágio em Desenvolvimento Web\" funciona melhor que \"Estagiário TI\".",
-            },
-            {
-              icone: ListChecksIcon,
-              titulo: "Separe obrigatório de desejável",
-              texto: "Requisitos demais afastam quem está começando.",
-            },
-            {
-              icone: MegaphoneIcon,
-              titulo: "Rascunho antes de publicar",
-              texto: "Salve, revise com calma e publique quando estiver pronta.",
-            },
-          ]}
-        />
-      }
-    >
-      <section className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Minhas vagas</h1>
-            <p className="text-sm text-muted-foreground">
-              {data ? `${data.total} ${data.total === 1 ? "vaga" : "vagas"} nesta lista` : "Gerencie suas publicações"}
-            </p>
-          </div>
+    <div className="flex flex-col gap-6">
+      <CabecalhoDaPagina
+        titulo="Minhas vagas"
+        descricao={data ? `${data.total} ${data.total === 1 ? "vaga" : "vagas"} nesta lista` : "Suas vagas publicadas"}
+        acoes={
           <Button asChild>
             <Link href="/empresa/vagas/nova">
               <PlusIcon />
               Nova vaga
             </Link>
           </Button>
-        </div>
+        }
+      />
 
+      <AvisoPerfilPendente />
+
+      <div role="search" className="flex">
+        <CampoDeBusca
+          id="busca-minhas-vagas"
+          rotulo="Buscar nas minhas vagas"
+          placeholder="Buscar pelo título ou pela área da vaga"
+          valor={busca}
+          aoMudar={setBusca}
+        />
+      </div>
+
+      <section className="overflow-hidden rounded-md border bg-card sombra-cartao">
         <Tabs
           value={aba}
-          onValueChange={(valor) => {
-            setAba(valor as Aba);
-            setPagina(1);
-          }}
-          className="mt-4"
+          onValueChange={(valor) => atualizarFiltrosNaUrl({ status: valor === "TODAS" ? undefined : valor })}
         >
           {/* No celular as abas rolam de lado; a barra de rolagem fica escondida. */}
           <div className="max-w-full overflow-x-auto border-b px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -201,7 +221,7 @@ export function MinhasVagas() {
         {conteudo}
       </section>
 
-      {data && <Paginacao pagina={data.pagina} totalPaginas={data.total_paginas} aoMudar={setPagina} />}
-    </GradeRede>
+      {data && <Paginacao pagina={data.pagina} totalPaginas={data.total_paginas} aoMudar={irParaPagina} />}
+    </div>
   );
 }

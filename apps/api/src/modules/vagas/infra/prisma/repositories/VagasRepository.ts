@@ -277,7 +277,15 @@ export class VagasRepository implements IVagasRepository {
   }
 
   listByEmpresa(empresaId: number, filtros: FiltrosMinhasVagas): Promise<Paginado<VagaResumo>> {
-    return this.paginar({ empresa_id: empresaId, status: filtros.status }, filtros);
+    const busca = filtros.busca;
+    return this.paginar(
+      {
+        empresa_id: empresaId,
+        status: filtros.status,
+        OR: busca ? [{ titulo: { contains: busca } }, { area_atuacao: { contains: busca } }] : undefined,
+      },
+      filtros,
+    );
   }
 
   async updateStatus(id: number, status: StatusVaga): Promise<VagaDetalhe> {

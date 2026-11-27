@@ -161,9 +161,10 @@ export const filtrosVagasSchema = z.object({
 
 export type FiltrosVagas = z.output<typeof filtrosVagasSchema>;
 
-/** GET /api/vagas/minhas: vagas da empresa logada. */
+/** GET /api/vagas/minhas: vagas da empresa logada. A busca procura no título e na área. */
 export const filtrosMinhasVagasSchema = z.object({
   status: z.enum(STATUS_VAGA).optional().catch(undefined),
+  busca: textoDeFiltro(100),
   pagina,
   por_pagina: porPagina,
 });

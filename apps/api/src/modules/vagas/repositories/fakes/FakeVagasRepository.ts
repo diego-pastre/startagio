@@ -114,8 +114,15 @@ export class FakeVagasRepository implements IVagasRepository {
   }
 
   async listByEmpresa(empresaId: number, filtros: FiltrosMinhasVagas): Promise<Paginado<VagaResumo>> {
+    const busca = filtros.busca?.toLocaleLowerCase("pt-BR");
+    const contem = (texto: string) => (busca ? texto.toLocaleLowerCase("pt-BR").includes(busca) : true);
     return this.paginar(
-      this.vagas.filter((vaga) => vaga.empresa.id === empresaId && (!filtros.status || vaga.status === filtros.status)),
+      this.vagas.filter(
+        (vaga) =>
+          vaga.empresa.id === empresaId &&
+          (!filtros.status || vaga.status === filtros.status) &&
+          (contem(vaga.titulo) || contem(vaga.area_atuacao)),
+      ),
       filtros,
     );
   }

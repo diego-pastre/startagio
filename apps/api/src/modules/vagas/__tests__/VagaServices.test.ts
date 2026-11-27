@@ -170,4 +170,28 @@ describe("ListVagasDaEmpresaService", () => {
     expect((await listar.execute(empresa1, { ...PAGINA, status: "RASCUNHO" })).total).toBe(1);
     await expect(listar.execute(usuarioEmpresa(null), PAGINA)).rejects.toBeInstanceOf(ForbiddenError);
   });
+
+  it("busca no título e na área, junto com o status, e pagina o resultado", async () => {
+    await criar.execute(empresa1, novaVaga());
+    await criar.execute(
+      empresa1,
+      novaVaga((d) => {
+        d.vaga.titulo = "Estágio em Orçamentos";
+        d.vaga.area_atuacao = "Engenharia";
+        d.vaga.status = "RASCUNHO";
+      }),
+    );
+    await criar.execute(empresa2, novaVaga((d) => (d.vaga.titulo = "Estágio em Orçamentos")));
+    const listar = new ListVagasDaEmpresaService(repositorio);
+    const titulos = async (filtros: object) =>
+      (await listar.execute(empresa1, { ...PAGINA, ...filtros })).dados.map((vaga) => vaga.titulo);
+
+    expect(await titulos({ busca: "orçamentos" })).toEqual(["Estágio em Orçamentos"]);
+    expect(await titulos({ busca: "tecnologia" })).toEqual(["Estágio em Desenvolvimento Web"]);
+    expect(await titulos({ busca: "orçamentos", status: "ABERTA" })).toEqual([]);
+
+    const primeiraPagina = await listar.execute(empresa1, { pagina: 1, por_pagina: 1 });
+    expect(primeiraPagina).toMatchObject({ total: 2, total_paginas: 2 });
+    expect(primeiraPagina.dados).toHaveLength(1);
+  });
 });

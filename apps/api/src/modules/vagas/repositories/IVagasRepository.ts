@@ -20,6 +20,7 @@ export interface IVagasRepository {
   findById(id: number): Promise<VagaDetalhe | null>;
   /** Vagas com status ABERTA e inscrição no prazo (`hoje` no formato YYYY-MM-DD), das mais novas para as mais antigas. */
   listAbertas(filtros: FiltrosVagas, hoje: string): Promise<Paginado<VagaResumo>>;
+  /** Vagas da empresa em qualquer status (busca no título e na área), das mais novas para as mais antigas. */
   listByEmpresa(empresaId: number, filtros: FiltrosMinhasVagas): Promise<Paginado<VagaResumo>>;
   updateStatus(id: number, status: StatusVaga): Promise<VagaDetalhe>;
   /** Áreas e cursos que aparecem nas vagas abertas, para os filtros do mural. */
