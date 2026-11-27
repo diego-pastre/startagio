@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Building2Icon, GraduationCapIcon, LandmarkIcon, type LucideIcon } from "lucide-react";
+import { Building2Icon, GraduationCapIcon, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,11 +9,12 @@ import {
   cadastroUsuarioSchema,
   formatarCpf,
   formatarTelefone,
-  NIVEIS_ACESSO,
+  NIVEIS_CADASTRO_PUBLICO,
   NIVEL_ACESSO_LABEL,
-  type NivelAcesso,
+  type NivelCadastroPublico,
 } from "@startagio/contracts";
 import { CampoTexto } from "@/components/campo-texto";
+import { Cartaz } from "@/components/cartaz";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,10 +41,10 @@ const formSchema = cadastroUsuarioSchema
     path: ["confirmar_senha"],
   });
 
-const PERFIL: Record<NivelAcesso, { descricao: string; icone: LucideIcon }> = {
+// Instituição de ensino não aparece aqui: essa conta é criada à mão (ver docs/arquitetura.md).
+const PERFIL: Record<NivelCadastroPublico, { descricao: string; icone: LucideIcon }> = {
   ESTUDANTE: { descricao: "Procuro vagas de estágio", icone: GraduationCapIcon },
   EMPRESA: { descricao: "Publico vagas de estágio", icone: Building2Icon },
-  INSTITUICAO_ENSINO: { descricao: "Acompanho e valido estágios", icone: LandmarkIcon },
 };
 
 export function CadastroForm() {
@@ -72,10 +73,10 @@ export function CadastroForm() {
   });
 
   return (
-    <div className="flex w-full max-w-xl flex-col gap-8">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight">Crie sua conta</h1>
-        <p className="text-muted-foreground">Leva um minuto. Comece escolhendo como vai usar o Startagio.</p>
+    <Cartaz className="flex w-full max-w-xl flex-col gap-7 px-6 pt-9 pb-7 sm:px-8">
+      <header className="flex flex-col gap-1.5">
+        <h1 className="text-[2rem] leading-tight font-bold">Criar conta</h1>
+        <p className="text-sm text-muted-foreground">Comece escolhendo como vai usar o Startagio.</p>
       </header>
       <form onSubmit={enviar} noValidate className="flex flex-col gap-6">
         <FieldGroup>
@@ -95,20 +96,20 @@ export function CadastroForm() {
                   name={field.name}
                   value={field.value ?? ""}
                   onValueChange={field.onChange}
-                  className="grid gap-3 sm:grid-cols-3"
+                  className="grid gap-3 sm:grid-cols-2"
                 >
-                  {NIVEIS_ACESSO.map((nivel) => {
+                  {NIVEIS_CADASTRO_PUBLICO.map((nivel) => {
                     const Icone = PERFIL[nivel].icone;
                     return (
                       <FieldLabel
                         key={nivel}
                         htmlFor={`nivel-${nivel}`}
-                        className="rounded-xl! transition-colors has-data-checked:border-primary! has-data-checked:bg-marca-suave! has-data-checked:ring-1 has-data-checked:ring-primary"
+                        className="rounded-md! transition-colors has-data-checked:border-primary! has-data-checked:bg-marca-suave! has-data-checked:ring-1 has-data-checked:ring-primary"
                       >
                         <Field orientation="vertical" data-invalid={fieldState.invalid} className="gap-2 p-3!">
                           {/* O Field vertical estica cada filho: ícone e rádio ficam juntos numa linha. */}
                           <div className="flex items-start justify-between">
-                            <span className="flex size-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-has-data-checked/field-label:bg-primary group-has-data-checked/field-label:text-primary-foreground">
+                            <span className="flex size-10 items-center justify-center rounded-md bg-muted text-muted-foreground transition-colors group-has-data-checked/field-label:bg-primary group-has-data-checked/field-label:text-primary-foreground">
                               <Icone className="size-5" />
                             </span>
                             <RadioGroupItem value={nivel} id={`nivel-${nivel}`} aria-invalid={fieldState.invalid} />
@@ -200,6 +201,6 @@ export function CadastroForm() {
           </Link>
         </p>
       </form>
-    </div>
+    </Cartaz>
   );
 }

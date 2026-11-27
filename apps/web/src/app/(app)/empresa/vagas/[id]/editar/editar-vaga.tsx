@@ -49,7 +49,7 @@ export function EditarVaga() {
   // Encerrada é definitiva (seção 6.4 do PDF): a API também recusa a edição.
   if (vaga.data.status === "ENCERRADA") {
     return (
-      <Empty className="mx-auto max-w-xl rounded-2xl border bg-card sombra-cartao">
+      <Empty className="mx-auto max-w-xl rounded-md border bg-card sombra-cartao">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <LockIcon />

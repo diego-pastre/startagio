@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheckIcon, CircleCheckIcon, GaugeIcon, SearchIcon, SendIcon, SparklesIcon } from "lucide-react";
+import { CalendarCheckIcon, SearchIcon, SendIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -12,9 +12,8 @@ import {
 import { AvatarNome } from "@/components/avatar-nome";
 import { BarraAfinidade, NotaCircular } from "@/components/candidaturas/indicadores";
 import { StatusAprovacaoBadge } from "@/components/candidaturas/status-aprovacao-badge";
-import { CartaoDicas } from "@/components/layout/cartao-dicas";
-import { CartaoPerfil } from "@/components/layout/cartao-perfil";
-import { GradeRede } from "@/components/layout/grade-rede";
+import { AvisoPerfilPendente } from "@/components/layout/aviso-perfil-pendente";
+import { CabecalhoDaPagina } from "@/components/layout/cabecalho-pagina";
 import { Paginacao } from "@/components/paginacao";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -48,7 +47,7 @@ export function MinhasCandidaturas() {
     conteudo = (
       <div className="flex flex-col gap-3 p-5">
         {[1, 2, 3].map((linha) => (
-          <Skeleton key={linha} className="h-28 w-full rounded-xl" />
+          <Skeleton key={linha} className="h-28 w-full rounded-md" />
         ))}
       </div>
     );
@@ -100,56 +99,33 @@ export function MinhasCandidaturas() {
   }
 
   return (
-    <GradeRede
-      esquerda={<CartaoPerfil />}
-      direita={
-        <CartaoDicas
-          titulo="Como ler o resultado"
-          dicas={[
-            {
-              icone: GaugeIcon,
-              titulo: "Nota de 0 a 10",
-              texto: "Média ponderada da prova. Verde quando passa da nota mínima da vaga.",
-            },
-            {
-              icone: SparklesIcon,
-              titulo: "Afinidade",
-              texto: "Mistura o quanto seu curso, semestre e idioma combinam com a vaga e a nota da prova.",
-            },
-            {
-              icone: CircleCheckIcon,
-              titulo: "Em análise",
-              texto: "A empresa ainda está olhando o ranking. Aprovado ou reprovado aparece aqui.",
-            },
-          ]}
-        />
-      }
-    >
-      <section className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Minhas candidaturas</h1>
-            <p className="text-sm text-muted-foreground">
-              {data
-                ? `${data.total} ${data.total === 1 ? "candidatura" : "candidaturas"} nesta lista`
-                : "Acompanhe suas provas e resultados"}
-            </p>
-          </div>
+    <div className="flex flex-col gap-6">
+      <CabecalhoDaPagina
+        titulo="Minhas candidaturas"
+        descricao={
+          data
+            ? `${data.total} ${data.total === 1 ? "candidatura" : "candidaturas"} nesta lista`
+            : "Suas provas e resultados"
+        }
+        acoes={
           <Button asChild variant="outline">
             <Link href="/estudante/vagas">
               <SearchIcon />
-              Buscar vagas
+              Ver o mural
             </Link>
           </Button>
-        </div>
+        }
+      />
 
+      <AvisoPerfilPendente />
+
+      <section className="overflow-hidden rounded-md border bg-card sombra-cartao">
         <Tabs
           value={aba}
           onValueChange={(valor) => {
             setAba(valor as Aba);
             setPagina(1);
           }}
-          className="mt-4"
         >
           <div className="max-w-full overflow-x-auto border-b px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <TabsList variant="line" className="h-11!">
@@ -170,7 +146,7 @@ export function MinhasCandidaturas() {
       </section>
 
       {data && <Paginacao pagina={data.pagina} totalPaginas={data.total_paginas} aoMudar={setPagina} />}
-    </GradeRede>
+    </div>
   );
 }
 
@@ -188,12 +164,12 @@ function LinhaCandidatura({ candidatura }: { candidatura: Candidatura }) {
           {vagaAberta ? (
             <Link
               href={`/estudante/vagas/${vaga.id}`}
-              className="font-semibold underline-offset-4 hover:text-primary hover:underline"
+              className="font-heading text-lg leading-tight font-bold underline-offset-4 hover:text-primary hover:underline"
             >
               {vaga.titulo}
             </Link>
           ) : (
-            <span className="font-semibold">{vaga.titulo}</span>
+            <span className="font-heading text-lg leading-tight font-bold">{vaga.titulo}</span>
           )}
           {!vagaAberta && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-[0.7rem] font-medium text-muted-foreground">
@@ -203,7 +179,8 @@ function LinhaCandidatura({ candidatura }: { candidatura: Candidatura }) {
         </div>
         <p className="flex items-center gap-2 text-xs text-muted-foreground">
           <AvatarNome nome={vaga.empresa.nome_fantasia} forma="quadrado" tamanho="sm" className="size-5 rounded-md text-[0.55rem]" />
-          {vaga.empresa.nome_fantasia} · {vaga.empresa.cidade}/{vaga.empresa.estado}
+          <span className="font-medium text-foreground">{vaga.empresa.nome_fantasia}</span>
+          {vaga.empresa.cidade}/{vaga.empresa.estado}
         </p>
         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">

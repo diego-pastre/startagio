@@ -55,3 +55,4 @@ pnpm dev          # API em http://localhost:3333 e site em http://localhost:3000
 
 - [`docs/arquitetura.md`](docs/arquitetura.md): como as peças conversam, endpoints prontos e roteiro das fases
 - [`docs/banco-de-dados.md`](docs/banco-de-dados.md): o que mudou em relação ao PDF e as decisões pendentes
+- [`docs/variaveis-de-ambiente.md`](docs/variaveis-de-ambiente.md): o que cada app precisa, em desenvolvimento e em produção

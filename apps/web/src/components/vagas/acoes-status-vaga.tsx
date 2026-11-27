@@ -1,6 +1,7 @@
 "use client";
 
 import { EllipsisIcon } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { TRANSICOES_STATUS_VAGA, type StatusVaga, type VagaResumo } from "@startagio/contracts";
@@ -19,6 +20,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAlterarStatusVaga } from "@/domains/vagas/hooks";
@@ -38,11 +40,11 @@ function mensagemDeSucesso(de: StatusVaga, para: StatusVaga): string {
 
 interface AcoesStatusVagaProps {
   vaga: Pick<VagaResumo, "id" | "titulo" | "status">;
-  /** "botoes" na página da vaga; "menu" (três pontinhos) na tabela de vagas. */
+  /** "botoes" na página da vaga (que já tem o próprio botão Editar); "menu" (três pontinhos, com Editar) na lista de vagas. */
   modo: "botoes" | "menu";
 }
 
-/** Publicar, pausar, reabrir e encerrar, conforme as transições permitidas para o status atual. */
+/** Publicar, pausar, reabrir e encerrar, conforme as transições permitidas para o status atual. No menu, também Editar. */
 export function AcoesStatusVaga({ vaga, modo }: AcoesStatusVagaProps) {
   const alterar = useAlterarStatusVaga();
   const [confirmandoEncerrar, setConfirmandoEncerrar] = useState(false);
@@ -93,6 +95,11 @@ export function AcoesStatusVaga({ vaga, modo }: AcoesStatusVagaProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {/* Toda vaga com ação de status ainda pode ser editada: só a encerrada não pode, e ela não tem menu. */}
+            <DropdownMenuItem asChild>
+              <Link href={`/empresa/vagas/${vaga.id}/editar`}>Editar</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             {destinos.map((para) => (
               <DropdownMenuItem
                 key={para}

@@ -56,7 +56,7 @@ docs/
 | Método | Rota | Acesso | O que faz |
 |---|---|---|---|
 | GET | `/api/health` | público | checagem de vida |
-| POST | `/api/auth/register` | público | cria o usuário e já abre a sessão |
+| POST | `/api/auth/register` | público | cria o usuário (só Estudante ou Empresa) e já abre a sessão |
 | POST | `/api/auth/login` | público | login por usuário ou e-mail |
 | POST | `/api/auth/logout` | público | apaga o cookie de sessão |
 | GET | `/api/auth/me` | logado | usuário, permissões e empresa (se houver) |
@@ -65,7 +65,7 @@ docs/
 | PUT | `/api/empresas/me` | Empresa | atualiza a ficha |
 | GET | `/api/vagas` | logado | mural: vagas abertas e no prazo, com filtros `busca`, `area`, `modalidade`, `curso`, `pagina` e `por_pagina` |
 | GET | `/api/vagas/filtros` | logado | áreas e cursos que existem nas vagas abertas (opções dos filtros) |
-| GET | `/api/vagas/minhas` | `pode_criar_vagas` | vagas da empresa logada, em qualquer status (filtro `status`) |
+| GET | `/api/vagas/minhas` | `pode_criar_vagas` | vagas da empresa logada, em qualquer status, com filtros `status`, `busca` (título ou área), `pagina` e `por_pagina` |
 | POST | `/api/vagas` | `pode_criar_vagas` | cria vaga, perfil desejado e cursos numa transação só (seção 6.2 do PDF) |
 | GET | `/api/vagas/:id` | logado | detalhe. Vaga que não está aberta só aparece para a empresa dona e para a instituição; para os outros, `404` |
 | PATCH | `/api/vagas/:id/status` | `pode_criar_vagas` | publicar, pausar, reabrir ou encerrar, conforme `TRANSICOES_STATUS_VAGA` |
@@ -74,7 +74,7 @@ docs/
 | POST | `/api/vagas/:id/responder` | `pode_candidatar` | corrige, calcula nota e afinidade e grava em `pontuacoes` (`{ "respostas": { "<id da questão>": "B" } }`) |
 | PUT | `/api/vagas/:id` | `pode_criar_vagas` | edita a vaga; sem `questionario`, a prova fica como está (obrigatório quando já há candidatos) |
 | GET | `/api/vagas/:id/formulario` | `pode_criar_vagas` | a vaga completa, com gabarito, para a empresa dona editar, e se a prova está travada |
-| GET | `/api/vagas/:id/candidatos` | `pode_ver_candidatos` | ranking da vaga (Tela 4), com contagem por status, filtro `status` e paginação |
+| GET | `/api/vagas/:id/candidatos` | `pode_ver_candidatos` | ranking da vaga (Tela 4), com contagem por status, filtro `status` e paginação. Traz nome, e-mail e telefone do estudante; o CPF não sai da API |
 | PATCH | `/api/pontuacoes/:id/status` | `pode_ver_candidatos` | aprova, reprova ou volta para análise (empresa dona) |
 | GET | `/api/candidaturas` | `pode_candidatar` | "Minhas candidaturas", com filtro `status` e paginação |
 | GET | `/api/estudantes/perfil` | Estudante | perfil acadêmico; `404` se ainda não foi preenchido |
@@ -111,6 +111,22 @@ A cor e a logo oficiais ainda não foram definidas. Para trocar:
   - "hoje" é sempre `hojeISO()`, no horário de Brasília. Assim a vaga não sai do mural três horas antes, como aconteceria contando em UTC.
 - **Dinheiro:** o banco guarda `DECIMAL`, e a API devolve `number`. No formulário a bolsa é digitada com máscara (`1.350,00`), e o schema aceita esse texto ou o número.
 - **O mesmo schema roda duas vezes:** o formulário converte o que a pessoa digitou ("30", "1.350,00") e a API valida de novo o que chegou (30, 1350). Por isso os blocos de `packages/contracts/src/schemas/campos.ts` aceitam a própria saída como entrada. Há um teste que garante isso.
-- **`API_URL` no build do web:** o Next calcula os `rewrites` na hora do `next build`. Em produção, a variável precisa estar definida já no build, não só ao iniciar.
+- **`API_URL` no build do web:** o Next calcula os `rewrites` na hora do `next build`. Em produção, a variável precisa estar definida já no build, não só ao iniciar. Sem ela, o build para com erro (`apps/web/src/config/env.ts`). Lista completa em [`variaveis-de-ambiente.md`](variaveis-de-ambiente.md).
 - **Decorators do tsyringe:** os services recebem as dependências por token (`@inject("UsuariosRepository")`) e não pelo tipo, porque tsx, tsup e Vitest não geram os metadados de tipo. O teste `src/__tests__/container.test.ts` garante que tudo resolve.
 - **TypeScript fixo na 5.9:** é a versão que o Next 16.4 usa. Atualizar para a 7 exige testar o projeto todo.
+
+## Segurança
+
+- **Limite de tentativas no login** (`shared/infra/http/middlewares/limitarTentativasDeLogin.ts`):
+  - depois de 10 senhas erradas na mesma conta em 15 minutos, o login dela fica bloqueado até a janela acabar (resposta 429 com o tempo de espera);
+  - o mesmo vale para 50 senhas erradas vindas do mesmo endereço, mais folgado porque uma faculdade inteira pode sair pelo mesmo endereço de internet;
+  - o endereço vem do cabeçalho `X-Real-IP`, que a entrada pública da hospedagem preenche e o Next repassa. Por isso **a API não pode ter endereço público**: só o site deve falar com ela;
+  - a contagem fica na memória: zera quando a API reinicia e vale para uma cópia só da API.
+- **Cadastro público só de Estudante e Empresa.** A instituição de ensino vê vagas em rascunho e vai validar estágios, então a conta dela é criada à mão: cadastre a pessoa como estudante pelo site e troque o perfil no banco:
+
+  ```sql
+  UPDATE usuarios SET nivel_acesso = 'Instituição de ensino' WHERE usuario = 'login-da-pessoa';
+  ```
+
+  Se a pessoa já tiver preenchido o perfil acadêmico, apague a linha dela em `perfil_estudante`.
+- **CPF do estudante:** só ele vê o próprio. O ranking da empresa traz nome, e-mail e telefone.

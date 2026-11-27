@@ -15,6 +15,17 @@ export function textoDaBolsa(valor: number): string {
   return valor > 0 ? `${formatarMoeda(valor)}/mês` : "Sem bolsa";
 }
 
+/** Bolsa para o número grande do cartaz: sem centavos quando o valor é redondo ("R$ 1.250"). null se não há bolsa. */
+export function bolsaCompacta(valor: number): string | null {
+  if (valor <= 0) return null;
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: Number.isInteger(valor) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(valor);
+}
+
 /** "Inglês (básico)". null quando a vaga não exige idioma. */
 export function textoDoIdioma({ idioma_exigido, nivel_idioma }: Pick<PerfilDesejado, "idioma_exigido" | "nivel_idioma">) {
   if (!idioma_exigido) return null;

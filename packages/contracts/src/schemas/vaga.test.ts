@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filtrosVagasSchema, novaVagaSchema, podeMudarStatus } from "./vaga";
+import { filtrosMinhasVagasSchema, filtrosVagasSchema, novaVagaSchema, podeMudarStatus } from "./vaga";
 
 // Exemplo da seção 7.1 do PDF, com valores como o formulário envia.
 const doFormulario = {
@@ -151,6 +151,23 @@ describe("filtrosVagasSchema", () => {
       busca: undefined,
       area: undefined,
       curso: undefined,
+    });
+  });
+});
+
+describe("filtrosMinhasVagasSchema", () => {
+  it("aceita busca e status, e ignora o que vier inválido", () => {
+    expect(filtrosMinhasVagasSchema.parse({ status: "ABERTA", busca: " web ", pagina: "2" })).toEqual({
+      status: "ABERTA",
+      busca: "web",
+      pagina: 2,
+      por_pagina: 12,
+    });
+    expect(filtrosMinhasVagasSchema.parse({ status: "APAGADA", busca: "  " })).toEqual({
+      status: undefined,
+      busca: undefined,
+      pagina: 1,
+      por_pagina: 12,
     });
   });
 });

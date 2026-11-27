@@ -22,18 +22,16 @@ export function EmBreve({
   icone?: LucideIcon;
 }) {
   return (
-    <section className="flex flex-col items-center gap-4 overflow-hidden rounded-2xl border bg-card px-6 py-14 text-center sombra-cartao">
-      <span className="relative flex size-20 items-center justify-center">
-        <span className="absolute inset-0 rounded-full bg-marca-suave" />
-        <span className="absolute inset-2 animate-pulse rounded-full bg-primary/10" />
-        <Icone className="relative size-8 text-primary" />
+    <section className="flex flex-col items-center gap-4 rounded-md border border-dashed bg-card px-6 py-14 text-center">
+      <span className="flex size-16 items-center justify-center rounded-full bg-marca-suave">
+        <Icone className="size-7 text-primary" />
       </span>
       <div className="flex max-w-md flex-col gap-2">
-        <h1 className="text-xl font-bold">{titulo}</h1>
+        <h2 className="text-xl font-bold">{titulo}</h2>
         {descricao && <p className="text-sm text-muted-foreground">{descricao}</p>}
       </div>
-      <span className="rounded-full bg-aviso-suave px-3 py-1 text-xs font-semibold text-aviso-foreground">
-        Em construção · {etapa}
+      <span className="rounded-[3px] border-[1.5px] border-dashed border-aviso px-2 py-0.5 text-xs font-semibold text-aviso-foreground">
+        Em construção: {etapa}
       </span>
     </section>
   );

@@ -17,6 +17,7 @@ import {
 } from "@startagio/contracts";
 import { AvatarNome } from "@/components/avatar-nome";
 import { CampoTexto } from "@/components/campo-texto";
+import { Cartaz } from "@/components/cartaz";
 import { Carregando } from "@/components/estados";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -48,10 +49,10 @@ export function EmpresaPerfil() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
       <CapaDaEmpresa empresa={empresa} />
       {!empresa && (
-        <Alert className="rounded-2xl border-aviso/40 bg-aviso-suave text-aviso-foreground *:data-[slot=alert-description]:text-aviso-foreground">
+        <Alert className="rounded-md border-aviso/50 bg-aviso-suave text-aviso-foreground *:data-[slot=alert-description]:text-aviso-foreground">
           <InfoIcon />
           <AlertDescription>
             Complete os dados jurídicos da sua empresa para habilitar a publicação de vagas de estágio.
@@ -63,22 +64,26 @@ export function EmpresaPerfil() {
   );
 }
 
-/** Topo no formato de página de empresa: capa, logo (iniciais), nome e onde fica. */
+/** Topo do perfil: a ficha da empresa presa no mural, com logo (iniciais), nome e onde fica. */
 function CapaDaEmpresa({ empresa }: { empresa: Empresa | null }) {
   return (
-    <header className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
-      <div className="h-28 bg-gradiente-marca" />
-      <div className="flex flex-col gap-3 px-5 pb-5 sm:px-6">
-        {empresa ? (
-          <AvatarNome nome={empresa.nome_fantasia} forma="quadrado" tamanho="xl" className="-mt-10 rounded-2xl ring-4 ring-card" />
-        ) : (
-          <span className="-mt-10 flex size-20 items-center justify-center rounded-2xl bg-muted text-muted-foreground ring-4 ring-card">
-            <Building2Icon className="size-8" />
-          </span>
-        )}
+    <Cartaz
+      corDaFita={empresa?.ramo_atuacao ?? empresa?.nome_fantasia}
+      className="flex flex-col gap-4 px-5 pt-9 pb-5 sm:flex-row sm:items-center sm:gap-5 sm:px-6"
+    >
+      {empresa ? (
+        <AvatarNome nome={empresa.nome_fantasia} forma="quadrado" tamanho="xl" />
+      ) : (
+        <span className="flex size-20 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+          <Building2Icon className="size-8" />
+        </span>
+      )}
+      <div className="flex min-w-0 flex-col gap-2">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">{empresa?.nome_fantasia ?? "Perfil da empresa"}</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-[1.9rem] leading-[1.05] font-bold sm:text-[2.2rem]">
+            {empresa?.nome_fantasia ?? "Perfil da empresa"}
+          </h1>
+          <p className="mt-1 text-muted-foreground">
             {empresa ? (empresa.ramo_atuacao ?? empresa.razao_social) : "Conte quem vocês são para os estudantes"}
           </p>
         </div>
@@ -97,7 +102,7 @@ function CapaDaEmpresa({ empresa }: { empresa: Empresa | null }) {
           </div>
         )}
       </div>
-    </header>
+    </Cartaz>
   );
 }
 

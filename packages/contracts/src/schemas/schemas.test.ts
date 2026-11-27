@@ -37,6 +37,13 @@ describe("cadastroUsuarioSchema", () => {
     const campos = resultado.error?.issues.map((issue) => issue.path[0]);
     expect(campos).toEqual(expect.arrayContaining(["data_nascimento", "usuario", "nivel_acesso"]));
   });
+
+  it("aceita Estudante e Empresa, mas não Instituição de ensino (essa conta é criada à mão)", () => {
+    expect(cadastroUsuarioSchema.safeParse({ ...cadastroValido, nivel_acesso: "EMPRESA" }).success).toBe(true);
+    const instituicao = cadastroUsuarioSchema.safeParse({ ...cadastroValido, nivel_acesso: "INSTITUICAO_ENSINO" });
+    expect(instituicao.success).toBe(false);
+    expect(instituicao.error?.issues[0]?.path).toEqual(["nivel_acesso"]);
+  });
 });
 
 describe("campos vazios", () => {

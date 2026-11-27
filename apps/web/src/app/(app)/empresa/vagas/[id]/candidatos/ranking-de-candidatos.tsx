@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
-  formatarCpf,
   formatarDataDoInstante,
   formatarTelefone,
   type CandidatoDaVaga,
@@ -15,6 +14,7 @@ import { AvatarNome } from "@/components/avatar-nome";
 import { BarraAfinidade } from "@/components/candidaturas/indicadores";
 import { StatusAprovacaoBadge } from "@/components/candidaturas/status-aprovacao-badge";
 import { Carregando } from "@/components/estados";
+import { CabecalhoDaPagina } from "@/components/layout/cabecalho-pagina";
 import { LinkVoltar } from "@/components/link-voltar";
 import { Paginacao } from "@/components/paginacao";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -85,22 +85,16 @@ export function RankingDeCandidatos() {
   const { vaga, contagem, candidatos, nota_minima_aprovacao: notaMinima } = data;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {voltar}
 
-      <header className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
-        <div className="relative flex flex-wrap items-end justify-between gap-3 bg-gradiente-marca px-5 py-6 text-white sm:px-6">
-          <div aria-hidden className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-white/10 blur-2xl" />
-          <div className="relative">
-            <p className="text-xs font-semibold tracking-wider text-white/75 uppercase">Ranking de candidatos</p>
-            <h1 className="text-2xl font-extrabold tracking-tight">{vaga.titulo}</h1>
-            <p className="text-sm text-white/85">
-              Ordenado por nota, depois afinidade. Nota mínima da prova: {formatarNota(notaMinima)}
-            </p>
-          </div>
-          <StatusVagaBadge status={vaga.status} className="relative ring-1 ring-white/40" />
-        </div>
+      <CabecalhoDaPagina
+        titulo={vaga.titulo}
+        descricao={`Ranking de candidatos por nota, depois afinidade. Nota mínima da prova: ${formatarNota(notaMinima)}.`}
+        acoes={<StatusVagaBadge status={vaga.status} />}
+      />
 
+      <section className="overflow-hidden rounded-md border bg-card sombra-cartao">
         {/* As contagens também são as abas do filtro. */}
         <div role="tablist" aria-label="Filtrar por situação" className="grid grid-cols-2 divide-x border-b sm:grid-cols-4">
           {ABAS.map((item) => (
@@ -114,12 +108,14 @@ export function RankingDeCandidatos() {
                 setPagina(1);
               }}
               className={cn(
-                "relative flex flex-col items-start gap-0.5 px-5 py-4 text-left transition-colors hover:bg-muted/50",
-                aba === item.valor && "bg-marca-suave/60 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-primary",
+                "relative flex flex-col items-start gap-1 px-5 py-4 text-left transition-colors hover:bg-muted/50",
+                aba === item.valor && "bg-muted/40 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-foreground",
               )}
             >
-              <span className={cn("text-2xl font-extrabold", item.cor)}>{contagem[item.valor]}</span>
-              <span className="text-xs text-muted-foreground">{item.rotulo}</span>
+              <span className={cn("font-heading text-3xl leading-none font-bold", item.cor)}>{contagem[item.valor]}</span>
+              <span className={cn("text-sm text-muted-foreground", aba === item.valor && "font-medium text-foreground")}>
+                <span className={cn(aba === item.valor && "marca-texto")}>{item.rotulo}</span>
+              </span>
             </button>
           ))}
         </div>
@@ -166,7 +162,7 @@ export function RankingDeCandidatos() {
             </Table>
           </div>
         )}
-      </header>
+      </section>
 
       <Paginacao pagina={candidatos.pagina} totalPaginas={candidatos.total_paginas} aoMudar={setPagina} />
     </div>
@@ -195,7 +191,7 @@ function LinhaDoRanking({ candidato, notaMinima, ocupado, aoMudar }: LinhaDoRank
           <div className="min-w-0">
             <p className="font-semibold">{estudante.nome_completo}</p>
             <p className="text-xs text-muted-foreground">
-              {perfil ? `${perfil.curso} · ${perfil.semestre_atual}º semestre` : "Perfil acadêmico não informado"}
+              {perfil ? `${perfil.curso}, ${perfil.semestre_atual}º semestre` : "Perfil acadêmico não informado"}
             </p>
             <p className="text-xs text-muted-foreground">Prova em {formatarDataDoInstante(candidato.data_conclusao)}</p>
             {/* Em telas menores a coluna de contato some: o e-mail aparece aqui. */}
@@ -213,15 +209,14 @@ function LinhaDoRanking({ candidato, notaMinima, ocupado, aoMudar }: LinhaDoRank
           <Contato icone={<PhoneIcon />} href={`tel:+55${estudante.telefone}`}>
             {formatarTelefone(estudante.telefone)}
           </Contato>
-          <span>CPF {formatarCpf(estudante.cpf)}</span>
         </div>
       </TableCell>
       <TableCell className="text-center">
         {/* Verde quando passa da nota mínima, como pede a Tela 4 do PDF. */}
         <span
           className={cn(
-            "inline-flex min-w-14 justify-center rounded-full px-2.5 py-1 text-sm font-bold",
-            atingiu ? "bg-sucesso-suave text-sucesso-foreground" : "bg-muted text-muted-foreground",
+            "inline-flex min-w-14 justify-center rounded-[3px] border-[1.5px] px-2 py-0.5 font-heading text-base font-bold",
+            atingiu ? "border-sucesso/70 text-sucesso-foreground" : "border-border text-muted-foreground",
           )}
           title={atingiu ? "Acima da nota mínima" : "Abaixo da nota mínima"}
         >
@@ -267,17 +262,16 @@ function LinhaDoRanking({ candidato, notaMinima, ocupado, aoMudar }: LinhaDoRank
   );
 }
 
-/** Pódio: os três primeiros ganham destaque. */
+/** Posição no ranking: o primeiro lugar leva marca-texto; o resto, só o número. */
 function Posicao({ numero }: { numero: number }) {
-  const podio = ["bg-destaque text-white", "bg-muted-foreground/70 text-white", "bg-[oklch(0.62_0.1_55)] text-white"];
   return (
     <span
       className={cn(
-        "flex size-8 items-center justify-center rounded-full text-sm font-bold",
-        podio[numero - 1] ?? "bg-muted text-muted-foreground",
+        "font-heading text-xl font-bold tabular-nums",
+        numero === 1 ? "marca-texto" : numero <= 3 ? "text-foreground" : "text-muted-foreground",
       )}
     >
-      {numero}
+      {numero}º
     </span>
   );
 }

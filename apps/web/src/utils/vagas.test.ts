@@ -1,6 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { TIPO_MODELO_LABEL } from "@startagio/contracts";
-import { faixaDeSemestres, inscricoesEncerradas, opcoesDe, resumirCursos, textoDaBolsa, textoDoIdioma } from "./vagas";
+import {
+  bolsaCompacta,
+  faixaDeSemestres,
+  inscricoesEncerradas,
+  opcoesDe,
+  resumirCursos,
+  textoDaBolsa,
+  textoDoIdioma,
+} from "./vagas";
+
+describe("bolsa no cartaz", () => {
+  it("esconde os centavos só quando o valor é redondo", () => {
+    expect(bolsaCompacta(1250)).toBe("R$ 1.250");
+    expect(bolsaCompacta(1250.5)).toBe("R$ 1.250,50");
+    expect(bolsaCompacta(0)).toBeNull();
+  });
+});
 
 describe("textos da vaga", () => {
   it("descreve a faixa de semestres", () => {

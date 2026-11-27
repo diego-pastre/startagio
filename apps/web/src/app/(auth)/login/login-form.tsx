@@ -5,14 +5,16 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { loginSchema } from "@startagio/contracts";
 import { CampoTexto } from "@/components/campo-texto";
+import { Cartaz } from "@/components/cartaz";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { FieldGroup, FieldSeparator } from "@/components/ui/field";
+import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { useLogin } from "@/domains/auth/hooks";
 import { mensagemDeErro } from "@/lib/api";
 import { aplicarErrosDaApi } from "@/lib/formularios";
 
+/** O login é mais um cartaz preso no mural. */
 export function LoginForm() {
   const login = useLogin();
   const form = useForm({
@@ -29,10 +31,10 @@ export function LoginForm() {
   });
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-8">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight">Que bom te ver de novo</h1>
-        <p className="text-muted-foreground">Entre com seu usuário ou e-mail para continuar.</p>
+    <Cartaz className="flex w-full max-w-sm flex-col gap-7 px-7 pt-9 pb-7">
+      <header className="flex flex-col gap-1.5">
+        <h1 className="text-[2rem] leading-tight font-bold">Entrar</h1>
+        <p className="text-sm text-muted-foreground">Com seu usuário ou e-mail.</p>
       </header>
 
       <form onSubmit={enviar} noValidate className="flex flex-col gap-6">
@@ -51,11 +53,12 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">Novo no Startagio?</FieldSeparator>
-
-      <Button asChild variant="outline" size="lg" className="w-full border-primary/40 text-primary hover:bg-marca-suave hover:text-primary">
-        <Link href="/cadastro">Criar uma conta</Link>
-      </Button>
-    </div>
+      <p className="border-t border-dashed pt-5 text-center text-sm text-muted-foreground">
+        Primeira vez aqui?{" "}
+        <Link href="/cadastro" className="font-semibold text-primary underline-offset-4 hover:underline">
+          Criar conta
+        </Link>
+      </p>
+    </Cartaz>
   );
 }

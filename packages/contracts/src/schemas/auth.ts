@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { NIVEIS_ACESSO } from "../enums";
+import { NIVEIS_CADASTRO_PUBLICO } from "../enums";
 import { calcularIdade } from "../utils/datas";
 import { cpfValido, somenteDigitos } from "../utils/documentos";
 import { email, preenchido, telefone, textoObrigatorio, textoOpcional } from "./campos";
@@ -30,7 +30,8 @@ export const cadastroUsuarioSchema = z.object({
   cpf: preenchido().transform(somenteDigitos).refine(cpfValido, "CPF inválido"),
   telefone,
   endereco: textoOpcional(255),
-  nivel_acesso: z.enum(NIVEIS_ACESSO, "Escolha um perfil"),
+  // Só Estudante e Empresa: a API recusa "Instituição de ensino" mesmo que alguém mande direto.
+  nivel_acesso: z.enum(NIVEIS_CADASTRO_PUBLICO, "Escolha um perfil"),
 });
 
 export type CadastroUsuarioInput = z.input<typeof cadastroUsuarioSchema>;

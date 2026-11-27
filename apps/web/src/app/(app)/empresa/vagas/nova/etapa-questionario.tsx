@@ -34,7 +34,7 @@ function ProvaTravada({ form }: { form: FormularioVaga }) {
   const prova = form.getValues("questionario");
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-start gap-3 rounded-xl border border-aviso/40 bg-aviso-suave p-4 text-sm text-aviso-foreground">
+      <div className="flex items-start gap-3 rounded-md border border-aviso/40 bg-aviso-suave p-4 text-sm text-aviso-foreground">
         <LockIcon className="mt-0.5 size-4 shrink-0" />
         <p>
           <strong>A prova está travada.</strong> Candidatos já responderam, e as notas deles foram calculadas com este
@@ -48,7 +48,7 @@ function ProvaTravada({ form }: { form: FormularioVaga }) {
       </div>
       <ol className="flex flex-col gap-3">
         {prova.questoes.map((questao, indice) => (
-          <li key={indice} className="rounded-xl border bg-muted/30 p-4">
+          <li key={indice} className="rounded-md border bg-muted/30 p-4">
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-primary">Questão {indice + 1}</span>
               <span className="text-muted-foreground">Peso {String(questao.peso_nota)}</span>
@@ -124,7 +124,7 @@ function ConstrutorDaProva({ form }: { form: FormularioVaga }) {
 
         <ol className="flex flex-col gap-4">
           {fields.map((campo, indice) => (
-            <li key={campo.id} className="flex flex-col gap-4 rounded-2xl border bg-muted/30 p-4">
+            <li key={campo.id} className="flex flex-col gap-4 rounded-md border bg-muted/30 p-4">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm font-bold text-primary">Questão {indice + 1}</span>
                 <div className="flex items-center gap-2">
