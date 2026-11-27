@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { NovaVagaAssistente } from "./nova-vaga-assistente";
+import { AssistenteVaga } from "./assistente-vaga";
 
 export const metadata: Metadata = { title: "Nova vaga" };
 
 export default function NovaVagaPage() {
-  return <NovaVagaAssistente />;
+  return <AssistenteVaga modo={{ tipo: "criar" }} />;
 }

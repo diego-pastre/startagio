@@ -41,6 +41,9 @@ O MariaDB tem uma versão `.zip` para Windows que roda sem instalador e sem admi
 | 10 | Collation `utf8mb4_unicode_ci` em vez de `utf8mb4_general_ci` | É a que o Prisma usa e ordena melhor os acentos do português |
 | 11 | `atualizado_em` é preenchido pelo Prisma (`@updatedAt`), não por `ON UPDATE CURRENT_TIMESTAMP` | Limitação do Prisma. Quem editar direto pelo phpMyAdmin precisa atualizar essa coluna à mão |
 | 12 | MariaDB 11.4 no Docker | A 10.4 do PDF saiu de suporte em 2024. O schema não usa nada que não exista na 10.4 |
+| 13 | Tabela nova `perfil_estudante` (curso, grau, semestre atual, instituição, idioma e nível), 1:1 com `usuarios` (`CASCADE`) | O cálculo de afinidade da seção 6.3 usa curso, semestre e idioma do estudante, que nenhuma tabela do PDF guardava. Decisão de 27/11/2026 (pendência 2) |
+| 14 | Coluna nova `pontuacoes.respostas` (JSON) com cada questão: alternativa marcada, a correta e se acertou | Permite conferir uma nota contestada. Decisão de 27/11/2026 (pendência 4) |
+| 15 | A prova é obrigatória: `POST /api/vagas` exige o questionário, e uma vaga sem prova não pode ser publicada nem reaberta | É o que o PDF já supõe (`pontuacoes.questionario_id` e `nota_obtida` obrigatórios). Decisão de 27/11/2026 (pendência 1) |
 
 O resto segue o PDF, inclusive os detalhes:
 
@@ -60,9 +63,28 @@ O PDF pede `START TRANSACTION`/`COMMIT` gravando vaga, perfil desejado, cursos, 
 
 As regras são as do PDF. Use **exclusão lógica** (`status = 'Encerrada'`), como a seção 6.4 recomenda. Para apagar uma vaga de verdade, apague antes, na mesma transação, `qualificacoes_cursos`, `perfil_desejado` e `pontuacoes` da vaga. `pontuacoes → questionarios` é `RESTRICT`, e o `CASCADE` da vaga para o questionário falharia se ainda houver pontuação.
 
+## Prova e candidatura (seção 6.3 do PDF)
+
+- **Enunciado:** cada questão grava em `questoes.enunciado` o JSON `{ "pergunta", "alternativas": { "A".."D" }, "correta" }`. A API remove a chave `correta` antes de mandar a prova para o estudante (`GET /api/vagas/:id/questionario`).
+- **Nota:** `[ soma dos pesos das questões certas ÷ soma de todos os pesos ] × 10`, com duas casas (`apps/api/src/modules/candidaturas/utils/correcao.ts`).
+- **Afinidade (0 a 100):** o PDF só diz que ela combina curso, semestre e idioma com o desempenho na prova. A fórmula é nossa (`utils/afinidade.ts`, com testes):
+  - cada critério que a vaga pede vale de 0 a 100. **Curso:** 100 se o curso do estudante está na lista da vaga (sem diferenciar acento e maiúscula), senão 0. **Semestre:** 100 dentro da faixa, perde 25 por semestre fora. **Idioma:** 100 se tem o idioma no nível pedido ou acima, perde 35 por nível abaixo, 0 sem o idioma;
+  - critério que a vaga não pede fica fora da média; vaga sem nenhum requisito tem aderência 100;
+  - **afinidade = 60% da aderência + 40% da nota × 10.**
+- **Status inicial:** toda candidatura começa `Em Analise`, mesmo abaixo da nota mínima (o PDF deixa a empresa escolher). Quem aprova ou reprova é a empresa, na fase 4.
+- **Uma tentativa por vaga:** garantida pela chave `uq_estudante_vaga`. O detalhe da vaga traz `minha_candidatura` (o `ja_candidatou` da Tela 3) para o front trocar o botão pela nota e o status.
+- **Perfil obrigatório:** sem `perfil_estudante`, a API recusa a candidatura (409) e o front manda completar o perfil antes da prova.
+- **Vagas antigas:** as vagas criadas na fase 2 não têm prova. Elas não recebem candidaturas nem podem ser publicadas até a empresa criar a prova pela edição.
+
+## Edição de vagas e ranking
+
+- **Editar** (`PUT /api/vagas/:id`): a empresa dona edita dados, perfil desejado, cursos e prova numa transação. Os cursos são trocados pela lista nova. O status muda só pelo `PATCH /status`, e vaga encerrada não é editada.
+- **Prova travada:** depois da primeira candidatura, a prova não muda mais (as notas já dadas usaram aquele gabarito). O front não manda o `questionario` e a API recusa com 409 se vier. A checagem é repetida dentro da transação, caso uma candidatura chegue no meio da edição. Decisão de 27/11/2026.
+- **Ranking** (`GET /api/vagas/:id/candidatos`, Tela 4 do PDF): ordem da query 2 da seção 6.4 (nota, afinidade, data de conclusão). A posição é sempre a do ranking completo, mesmo filtrando por status. Só a empresa dona vê, porque a tela mostra CPF, e-mail e telefone.
+- **Aprovar e reprovar** (`PATCH /api/pontuacoes/:id/status`): por enquanto só a empresa dona. A instituição entra quando a pendência 1 abaixo for decidida.
+
 ## Pendências para decidir antes das próximas fases
 
-1. **O questionário é obrigatório em toda vaga?** Hoje, como no PDF, `pontuacoes.questionario_id` e `nota_obtida` são obrigatórios: a candidatura *é* a resposta da prova. Se a vaga puder não ter prova, essas duas colunas viram opcionais e o ranking passa a ordenar só pela afinidade. Na fase 2 as vagas são publicadas sem questionário, porque a etapa 4 ainda não existe. Se a resposta for "obrigatório", publicar vai passar a exigir o questionário na fase 3. Decidir antes da fase 3.
-2. **Dados do estudante para a afinidade.** A seção 6.3 calcula a `pontuacao_afinidade` com o curso, o semestre e o nível de idioma do estudante, mas nenhuma tabela guarda esses dados. Opções: colunas em `pontuacoes`, preenchidas na candidatura, ou uma tabela de perfil do estudante. Decidir antes da fase 3.
-3. **Instituição de ensino.** Não há vínculo entre o aluno e a instituição, nem um campo de "homologado". Pelo PDF, a instituição altera o mesmo `status_aprovacao` que a empresa usa, então uma pode sobrescrever a decisão da outra. Decidir antes da fase 4.
-4. **Respostas da prova.** Só a nota fica salva. Guardar as respostas (JSON em `pontuacoes`) permite conferir um resultado contestado.
+Resolvidas em 27/11/2026: prova obrigatória (mudança 15), perfil do estudante em tabela própria (mudança 13) e respostas guardadas (mudança 14).
+
+1. **Instituição de ensino.** Não há vínculo entre o aluno e a instituição, nem um campo de "homologado". Pelo PDF, a instituição altera o mesmo `status_aprovacao` que a empresa usa, então uma pode sobrescrever a decisão da outra. Decidir antes da fase 4.

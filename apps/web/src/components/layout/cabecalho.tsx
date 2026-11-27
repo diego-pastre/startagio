@@ -1,12 +1,13 @@
 "use client";
 
-import { LogOutIcon } from "lucide-react";
+import { ChevronDownIcon, LogOutIcon, MoonIcon, SearchIcon, SunIcon, UserRoundIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useState, type FormEvent } from "react";
 import { NIVEL_ACESSO_LABEL, type UsuarioAutenticado } from "@startagio/contracts";
+import { AvatarNome } from "@/components/avatar-nome";
 import { Logo } from "@/components/logo";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,66 +18,157 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLogout } from "@/domains/auth/hooks";
 import { cn } from "@/lib/utils";
-import { AlternarTema } from "./alternar-tema";
-import { menuDoUsuario } from "./menu";
+import { menuDoUsuario, type ItemMenu } from "./menu";
 
-/** "Ana Souza (demo)" → "AS": só conta as palavras que começam com letra. */
-function iniciais(nome: string): string {
-  const partes = nome.split(/\s+/).filter((parte) => /^\p{L}/u.test(parte));
-  return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? (partes.at(-1)?.[0] ?? "") : "")).toUpperCase();
-}
-
+/** Barra do topo da área logada. No celular o menu vai para uma barra fixa embaixo, como num app. */
 export function Cabecalho({ usuario }: { usuario: UsuarioAutenticado }) {
   const pathname = usePathname();
-  const logout = useLogout();
+  const itens = menuDoUsuario(usuario);
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4 sm:gap-6">
-        <Logo compacto />
+    <>
+      <header className="sticky top-0 z-40 border-b bg-card/95 backdrop-blur supports-backdrop-filter:bg-card/80">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4">
+          <Logo compacto />
+          {usuario.permissoes.pode_candidatar && <BuscaRapida />}
 
-        {/* No celular o menu rola de lado sem mostrar a barra de rolagem. */}
-        <nav className="flex flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {menuDoUsuario(usuario).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                pathname.startsWith(item.href) && "bg-muted font-medium text-foreground",
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+          <nav aria-label="Menu principal" className="ml-auto hidden h-full items-stretch md:flex">
+            {itens.map((item) => (
+              <ItemDoTopo key={item.href} item={item} ativo={pathname.startsWith(item.href)} />
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-1">
-          <AlternarTema />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full" aria-label="Menu da conta">
-                <Avatar className="size-8">
-                  <AvatarFallback>{iniciais(usuario.nome_completo)}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="flex flex-col gap-0.5">
-                <span className="truncate">{usuario.empresa?.nome_fantasia ?? usuario.nome_completo}</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  {NIVEL_ACESSO_LABEL[usuario.nivel_acesso]} · {usuario.usuario}
-                </span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled={logout.isPending} onSelect={() => logout.mutate()}>
-                <LogOutIcon />
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <span className="mx-1 hidden h-8 w-px bg-border md:block" />
+          <div className="ml-auto md:ml-0">
+            <MenuDaConta usuario={usuario} />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <nav
+        aria-label="Menu principal"
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      >
+        {itens.map((item) => (
+          <ItemDeBaixo key={item.href} item={item} ativo={pathname.startsWith(item.href)} />
+        ))}
+      </nav>
+    </>
+  );
+}
+
+function ItemDoTopo({ item, ativo }: { item: ItemMenu; ativo: boolean }) {
+  const Icone = item.icone;
+  return (
+    <Link
+      href={item.href}
+      aria-current={ativo ? "page" : undefined}
+      className={cn(
+        "relative flex min-w-20 flex-col items-center justify-center gap-0.5 px-3 text-xs text-muted-foreground transition-colors hover:text-foreground",
+        ativo && "font-semibold text-foreground",
+        // Sublinhado da aba ativa, encostado na borda de baixo da barra.
+        "after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 after:transition-opacity",
+        ativo && "after:opacity-100",
+      )}
+    >
+      <Icone className={cn("size-5", ativo && "text-primary")} strokeWidth={ativo ? 2.4 : 2} />
+      {item.curto}
+    </Link>
+  );
+}
+
+function ItemDeBaixo({ item, ativo }: { item: ItemMenu; ativo: boolean }) {
+  const Icone = item.icone;
+  return (
+    <Link
+      href={item.href}
+      aria-current={ativo ? "page" : undefined}
+      className={cn(
+        "flex flex-1 flex-col items-center gap-0.5 py-2 text-[0.7rem] text-muted-foreground",
+        ativo && "font-semibold text-primary",
+      )}
+    >
+      <Icone className="size-5" strokeWidth={ativo ? 2.4 : 2} />
+      {item.curto}
+    </Link>
+  );
+}
+
+/** Busca do topo: leva para o mural já filtrado. */
+function BuscaRapida() {
+  const router = useRouter();
+  const [termo, setTermo] = useState("");
+
+  function buscar(evento: FormEvent) {
+    evento.preventDefault();
+    const busca = termo.trim();
+    router.push(busca ? `/estudante/vagas?busca=${encodeURIComponent(busca)}` : "/estudante/vagas");
+    setTermo("");
+  }
+
+  return (
+    <form role="search" onSubmit={buscar} className="relative hidden w-full max-w-72 sm:block">
+      <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+      <input
+        type="search"
+        aria-label="Buscar vagas"
+        placeholder="Buscar vagas, áreas, empresas"
+        value={termo}
+        onChange={(evento) => setTermo(evento.target.value)}
+        className="h-9 w-full rounded-full border border-transparent bg-muted pr-3 pl-9 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-ring focus:bg-card focus:ring-3 focus:ring-ring/30"
+      />
+    </form>
+  );
+}
+
+function MenuDaConta({ usuario }: { usuario: UsuarioAutenticado }) {
+  const logout = useLogout();
+  const { resolvedTheme, setTheme } = useTheme();
+  const nomeExibido = usuario.empresa?.nome_fantasia ?? usuario.nome_completo;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="flex flex-col items-center gap-0.5 rounded-lg px-2 py-1 text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+        aria-label="Menu da conta"
+      >
+        <AvatarNome nome={usuario.nome_completo} tamanho="sm" className="size-7 text-[0.65rem]" />
+        <span className="hidden items-center gap-0.5 md:flex">
+          Eu <ChevronDownIcon className="size-3" />
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64 p-0">
+        <DropdownMenuLabel className="flex items-center gap-3 p-3">
+          <AvatarNome nome={usuario.nome_completo} tamanho="md" />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-semibold text-foreground">{nomeExibido}</span>
+            <span className="truncate text-xs font-normal text-muted-foreground">
+              {NIVEL_ACESSO_LABEL[usuario.nivel_acesso]} · @{usuario.usuario}
+            </span>
+          </span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator className="my-0" />
+        <div className="p-1">
+          {usuario.nivel_acesso === "EMPRESA" && (
+            <DropdownMenuItem asChild>
+              <Link href="/empresa/perfil">
+                <UserRoundIcon />
+                Perfil da empresa
+              </Link>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onSelect={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+            <SunIcon className="hidden dark:block" />
+            <MoonIcon className="dark:hidden" />
+            {resolvedTheme === "dark" ? "Tema claro" : "Tema escuro"}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" disabled={logout.isPending} onSelect={() => logout.mutate()}>
+            <LogOutIcon />
+            Sair
+          </DropdownMenuItem>
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

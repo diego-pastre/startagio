@@ -1,14 +1,22 @@
 import type { Request, Response } from "express";
 import { container } from "tsyringe";
-import { alterarStatusVagaSchema, filtrosMinhasVagasSchema, filtrosVagasSchema, novaVagaSchema } from "@startagio/contracts";
+import {
+  alterarStatusVagaSchema,
+  editarVagaSchema,
+  filtrosMinhasVagasSchema,
+  filtrosVagasSchema,
+  novaVagaSchema,
+} from "@startagio/contracts";
 import { idDaRota } from "@shared/infra/http/parametros";
 import { usuarioDaRequisicao } from "@shared/infra/http/sessao";
 import { CreateVagaService } from "../../../services/vaga/CreateVagaService";
+import { FindFormularioVagaService } from "../../../services/vaga/FindFormularioVagaService";
 import { FindVagaService } from "../../../services/vaga/FindVagaService";
 import { ListOpcoesFiltroVagasService } from "../../../services/vaga/ListOpcoesFiltroVagasService";
 import { ListVagasAbertasService } from "../../../services/vaga/ListVagasAbertasService";
 import { ListVagasDaEmpresaService } from "../../../services/vaga/ListVagasDaEmpresaService";
 import { UpdateStatusVagaService } from "../../../services/vaga/UpdateStatusVagaService";
+import { UpdateVagaService } from "../../../services/vaga/UpdateVagaService";
 
 const VAGA_NAO_ENCONTRADA = "Vaga não encontrada.";
 
@@ -36,6 +44,17 @@ export class VagasController {
   async show(req: Request, res: Response): Promise<void> {
     const id = idDaRota(req, VAGA_NAO_ENCONTRADA);
     res.json(await container.resolve(FindVagaService).execute(usuarioDaRequisicao(req), id));
+  }
+
+  async formulario(req: Request, res: Response): Promise<void> {
+    const id = idDaRota(req, VAGA_NAO_ENCONTRADA);
+    res.json(await container.resolve(FindFormularioVagaService).execute(usuarioDaRequisicao(req), id));
+  }
+
+  async update(req: Request, res: Response): Promise<void> {
+    const id = idDaRota(req, VAGA_NAO_ENCONTRADA);
+    const dados = editarVagaSchema.parse(req.body);
+    res.json(await container.resolve(UpdateVagaService).execute(usuarioDaRequisicao(req), id, dados));
   }
 
   async updateStatus(req: Request, res: Response): Promise<void> {

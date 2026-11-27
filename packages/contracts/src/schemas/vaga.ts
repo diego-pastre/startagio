@@ -11,6 +11,7 @@ import {
   textoObrigatorio,
   textoOpcional,
 } from "./campos";
+import { questionarioSchema } from "./questionario";
 
 // Limites das seções 3.4, 3.5 e 4.2 (Tela 2) do PDF.
 export const CARGA_HORARIA_MINIMA = 10;
@@ -88,15 +89,33 @@ export const qualificacoesCursosSchema = z
     });
   });
 
-/** POST /api/vagas: vagas, perfil_desejado e qualificacoes_cursos num envio só (seção 7.1 do PDF). */
+/**
+ * POST /api/vagas: vagas, perfil_desejado, qualificacoes_cursos, questionarios e questoes num envio só
+ * (seção 7.1 do PDF). A prova é obrigatória: a candidatura é a resposta dela (docs/banco-de-dados.md).
+ */
 export const novaVagaSchema = z.object({
   vaga: dadosGeraisVagaSchema,
   perfil_desejado: perfilDesejadoSchema,
   qualificacoes_cursos: qualificacoesCursosSchema,
+  questionario: questionarioSchema,
 });
 
 export type NovaVagaInput = z.input<typeof novaVagaSchema>;
 export type NovaVagaData = z.output<typeof novaVagaSchema>;
+
+/**
+ * PUT /api/vagas/:id: os mesmos blocos da criação. O status muda só pelo PATCH /status.
+ * Sem `questionario`, a prova fica como está: é assim que o front manda quando a prova já
+ * foi respondida e está travada (docs/banco-de-dados.md).
+ */
+export const editarVagaSchema = z.object({
+  vaga: dadosGeraisVagaSchema.omit({ status: true }),
+  perfil_desejado: perfilDesejadoSchema,
+  qualificacoes_cursos: qualificacoesCursosSchema,
+  questionario: questionarioSchema.optional(),
+});
+
+export type EditarVagaData = z.output<typeof editarVagaSchema>;
 
 /** Mudanças de status que a empresa pode fazer. Encerrada é definitiva: é a exclusão lógica da seção 6.4 do PDF. */
 export const TRANSICOES_STATUS_VAGA: Record<StatusVaga, readonly StatusVaga[]> = {

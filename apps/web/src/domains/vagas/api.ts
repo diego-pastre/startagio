@@ -1,5 +1,7 @@
 import type {
+  EditarVagaData,
   FiltrosMinhasVagas,
+  FormularioDaVaga,
   FiltrosVagas,
   NovaVagaData,
   OpcoesFiltroVagas,
@@ -32,6 +34,16 @@ export async function buscarVaga(id: number): Promise<VagaDetalhe> {
 
 export async function criarVaga(dados: NovaVagaData): Promise<VagaDetalhe> {
   const { data } = await api.post<VagaDetalhe>("/vagas", dados);
+  return data;
+}
+
+export async function buscarFormularioVaga(id: number): Promise<FormularioDaVaga> {
+  const { data } = await api.get<FormularioDaVaga>(`/vagas/${id}/formulario`);
+  return data;
+}
+
+export async function editarVaga({ id, dados }: { id: number; dados: EditarVagaData }): Promise<VagaDetalhe> {
+  const { data } = await api.put<VagaDetalhe>(`/vagas/${id}`, dados);
   return data;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { InfoIcon } from "lucide-react";
+import { Building2Icon, GlobeIcon, InfoIcon, MapPinIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ import {
   type Empresa,
   type Uf,
 } from "@startagio/contracts";
+import { AvatarNome } from "@/components/avatar-nome";
 import { CampoTexto } from "@/components/campo-texto";
 import { Carregando } from "@/components/estados";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -47,10 +48,10 @@ export function EmpresaPerfil() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Dados da empresa</h1>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+      <CapaDaEmpresa empresa={empresa} />
       {!empresa && (
-        <Alert>
+        <Alert className="rounded-2xl border-aviso/40 bg-aviso-suave text-aviso-foreground *:data-[slot=alert-description]:text-aviso-foreground">
           <InfoIcon />
           <AlertDescription>
             Complete os dados jurídicos da sua empresa para habilitar a publicação de vagas de estágio.
@@ -59,6 +60,44 @@ export function EmpresaPerfil() {
       )}
       <EmpresaForm key={empresa?.id ?? "nova"} empresa={empresa} />
     </div>
+  );
+}
+
+/** Topo no formato de página de empresa: capa, logo (iniciais), nome e onde fica. */
+function CapaDaEmpresa({ empresa }: { empresa: Empresa | null }) {
+  return (
+    <header className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
+      <div className="h-28 bg-gradiente-marca" />
+      <div className="flex flex-col gap-3 px-5 pb-5 sm:px-6">
+        {empresa ? (
+          <AvatarNome nome={empresa.nome_fantasia} forma="quadrado" tamanho="xl" className="-mt-10 rounded-2xl ring-4 ring-card" />
+        ) : (
+          <span className="-mt-10 flex size-20 items-center justify-center rounded-2xl bg-muted text-muted-foreground ring-4 ring-card">
+            <Building2Icon className="size-8" />
+          </span>
+        )}
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">{empresa?.nome_fantasia ?? "Perfil da empresa"}</h1>
+          <p className="text-sm text-muted-foreground">
+            {empresa ? (empresa.ramo_atuacao ?? empresa.razao_social) : "Conte quem vocês são para os estudantes"}
+          </p>
+        </div>
+        {empresa && (
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <MapPinIcon className="size-3.5" />
+              {empresa.cidade}/{empresa.estado}
+            </span>
+            {empresa.site && (
+              <span className="flex items-center gap-1">
+                <GlobeIcon className="size-3.5" />
+                {empresa.site.replace(/^https?:\/\//, "")}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </header>
   );
 }
 

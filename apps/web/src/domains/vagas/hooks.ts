@@ -2,7 +2,16 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FiltrosMinhasVagas, FiltrosVagas, VagaDetalhe } from "@startagio/contracts";
-import { alterarStatusVaga, buscarOpcoesFiltro, buscarVaga, criarVaga, listarMinhasVagas, listarVagas } from "./api";
+import {
+  alterarStatusVaga,
+  buscarFormularioVaga,
+  buscarOpcoesFiltro,
+  buscarVaga,
+  criarVaga,
+  editarVaga,
+  listarMinhasVagas,
+  listarVagas,
+} from "./api";
 
 export const chavesVagas = {
   todas: ["vagas"] as const,
@@ -10,6 +19,7 @@ export const chavesVagas = {
   opcoesFiltro: ["vagas", "opcoes-filtro"] as const,
   minhas: (filtros: Partial<FiltrosMinhasVagas>) => ["vagas", "minhas", filtros] as const,
   detalhe: (id: number) => ["vagas", "detalhe", id] as const,
+  formulario: (id: number) => ["vagas", "formulario", id] as const,
 };
 
 /** Mural do estudante. Mantém a lista anterior na tela enquanto carrega a próxima página ou filtro. */
@@ -41,6 +51,17 @@ export function useVaga(id: number) {
   });
 }
 
+/** A vaga completa, com gabarito, para a empresa editar. Sempre busca de novo ao abrir a edição. */
+export function useFormularioVaga(id: number) {
+  return useQuery({
+    queryKey: chavesVagas.formulario(id),
+    queryFn: () => buscarFormularioVaga(id),
+    enabled: Number.isInteger(id) && id > 0,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+}
+
 /** Depois de criar ou mudar o status, guarda o detalhe novo e atualiza as listas. */
 function useAtualizarCacheDaVaga() {
   const queryClient = useQueryClient();
@@ -56,6 +77,11 @@ function useAtualizarCacheDaVaga() {
 export function useCriarVaga() {
   const atualizarCache = useAtualizarCacheDaVaga();
   return useMutation({ mutationFn: criarVaga, onSuccess: atualizarCache });
+}
+
+export function useEditarVaga() {
+  const atualizarCache = useAtualizarCacheDaVaga();
+  return useMutation({ mutationFn: editarVaga, onSuccess: atualizarCache });
 }
 
 export function useAlterarStatusVaga() {
