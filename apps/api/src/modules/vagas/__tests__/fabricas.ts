@@ -21,6 +21,14 @@ export function novaVaga(alterar?: (dados: NovaVagaInput) => void): NovaVagaData
     },
     perfil_desejado: { nivel_formacao: "BACHARELADO" },
     qualificacoes_cursos: [{ nome_curso: "Sistemas de Informação", grau: "GRADUACAO" }],
+    questionario: {
+      titulo: "Prova técnica",
+      questoes: [
+        { peso_nota: 2, enunciado: { pergunta: "Q1", alternativas: { A: "a", B: "b", C: "c", D: "d" }, correta: "B" } },
+        { peso_nota: 1, enunciado: { pergunta: "Q2", alternativas: { A: "a", B: "b", C: "c", D: "d" }, correta: "A" } },
+        { peso_nota: 1, enunciado: { pergunta: "Q3", alternativas: { A: "a", B: "b", C: "c", D: "d" }, correta: "D" } },
+      ],
+    },
   };
   alterar?.(dados);
   return novaVagaSchema.parse(dados);

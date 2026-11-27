@@ -1,5 +1,7 @@
 import { container } from "tsyringe";
+import "@modules/candidaturas/container";
 import "@modules/empresas/container";
+import "@modules/estudantes/container";
 import "@modules/usuarios/container";
 import "@modules/vagas/container";
 import { BcryptHashProvider } from "../providers/HashProvider/BcryptHashProvider";

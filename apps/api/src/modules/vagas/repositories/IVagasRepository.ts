@@ -1,4 +1,5 @@
 import type {
+  EditarVagaData,
   FiltrosMinhasVagas,
   FiltrosVagas,
   NovaVagaData,
@@ -10,8 +11,12 @@ import type {
 } from "@startagio/contracts";
 
 export interface IVagasRepository {
-  /** Grava vaga, perfil desejado e cursos numa transação só (seção 6.2 do PDF). */
+  /** Grava vaga, perfil desejado, cursos, questionário e questões numa transação só (seção 6.2 do PDF). */
   create(empresaId: number, data: NovaVagaData): Promise<VagaDetalhe>;
+  /** Atualiza a vaga inteira numa transação. Sem `questionario`, a prova fica como está. */
+  update(id: number, data: EditarVagaData): Promise<VagaDetalhe>;
+  /** A vaga completa, com o gabarito da prova, no formato do formulário de edição. */
+  findFormulario(id: number): Promise<EditarVagaData | null>;
   findById(id: number): Promise<VagaDetalhe | null>;
   /** Vagas com status ABERTA e inscrição no prazo (`hoje` no formato YYYY-MM-DD), das mais novas para as mais antigas. */
   listAbertas(filtros: FiltrosVagas, hoje: string): Promise<Paginado<VagaResumo>>;

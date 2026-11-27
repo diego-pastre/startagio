@@ -7,6 +7,17 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-marca: var(--marca);
+  --color-marca-forte: var(--marca-forte);
+  --color-marca-suave: var(--marca-suave);
+  --color-marca-suave-foreground: var(--marca-suave-foreground);
+  --color-destaque: var(--destaque);
+  --color-sucesso: var(--sucesso);
+  --color-sucesso-suave: var(--sucesso-suave);
+  --color-sucesso-foreground: var(--sucesso-foreground);
+  --color-aviso: var(--aviso);
+  --color-aviso-suave: var(--aviso-suave);
+  --color-aviso-foreground: var(--aviso-foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
@@ -49,72 +60,118 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  /*
+   * COR DA MARCA: a cor oficial ainda não foi definida.
+   * O tema inteiro sai destes dois números (matiz do OKLCH, de 0 a 360).
+   * Troque --marca-matiz e o site muda de cor. Ex.: 150 verde, 200 azul-petróleo, 25 coral.
+   */
+  --marca-matiz: 262;
+  --destaque-matiz: 45;
+
+  --marca: oklch(0.54 0.2 var(--marca-matiz));
+  --marca-forte: oklch(0.42 0.19 var(--marca-matiz));
+  --marca-suave: oklch(0.95 0.035 var(--marca-matiz));
+  --marca-suave-foreground: oklch(0.42 0.17 var(--marca-matiz));
+  --destaque: oklch(0.75 0.16 var(--destaque-matiz));
+  --sucesso: oklch(0.6 0.15 155);
+  --sucesso-suave: oklch(0.95 0.045 155);
+  --sucesso-foreground: oklch(0.42 0.11 155);
+  --aviso: oklch(0.75 0.15 75);
+  --aviso-suave: oklch(0.96 0.05 85);
+  --aviso-foreground: oklch(0.47 0.11 65);
+  /* Faixa do topo dos cartões de perfil e do painel do login. */
+  --gradiente-marca: linear-gradient(
+    120deg,
+    oklch(0.46 0.2 var(--marca-matiz)) 0%,
+    oklch(0.58 0.21 calc(var(--marca-matiz) + 28)) 55%,
+    oklch(0.74 0.15 var(--destaque-matiz)) 130%
+  );
+
+  /* Fundo levemente tingido pela marca, com cartões brancos por cima (como numa rede social). */
+  --background: oklch(0.972 0.006 var(--marca-matiz));
+  --foreground: oklch(0.21 0.025 var(--marca-matiz));
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.21 0.025 var(--marca-matiz));
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.21 0.025 var(--marca-matiz));
+  --primary: var(--marca);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.012 var(--marca-matiz));
+  --secondary-foreground: oklch(0.3 0.04 var(--marca-matiz));
+  --muted: oklch(0.955 0.01 var(--marca-matiz));
+  --muted-foreground: oklch(0.52 0.025 var(--marca-matiz));
+  --accent: var(--marca-suave);
+  --accent-foreground: var(--marca-suave-foreground);
+  --destructive: oklch(0.577 0.215 27.325);
+  --border: oklch(0.915 0.012 var(--marca-matiz));
+  --input: oklch(0.88 0.015 var(--marca-matiz));
+  --ring: oklch(0.62 0.17 var(--marca-matiz));
+  --chart-1: oklch(0.54 0.2 var(--marca-matiz));
+  --chart-2: oklch(0.75 0.16 var(--destaque-matiz));
+  --chart-3: oklch(0.6 0.15 155);
+  --chart-4: oklch(0.7 0.12 calc(var(--marca-matiz) + 40));
+  --chart-5: oklch(0.45 0.08 var(--marca-matiz));
+  --radius: 0.75rem;
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--marca);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: var(--marca-suave);
+  --sidebar-accent-foreground: var(--marca-suave-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --marca: oklch(0.7 0.16 var(--marca-matiz));
+  --marca-forte: oklch(0.8 0.12 var(--marca-matiz));
+  --marca-suave: oklch(0.3 0.07 var(--marca-matiz));
+  --marca-suave-foreground: oklch(0.86 0.08 var(--marca-matiz));
+  --destaque: oklch(0.8 0.14 var(--destaque-matiz));
+  --sucesso: oklch(0.72 0.14 155);
+  --sucesso-suave: oklch(0.3 0.06 155);
+  --sucesso-foreground: oklch(0.85 0.1 155);
+  --aviso: oklch(0.8 0.13 75);
+  --aviso-suave: oklch(0.32 0.06 75);
+  --aviso-foreground: oklch(0.88 0.1 80);
+  --gradiente-marca: linear-gradient(
+    120deg,
+    oklch(0.36 0.15 var(--marca-matiz)) 0%,
+    oklch(0.45 0.17 calc(var(--marca-matiz) + 28)) 60%,
+    oklch(0.55 0.12 var(--destaque-matiz)) 140%
+  );
+
+  --background: oklch(0.16 0.02 var(--marca-matiz));
+  --foreground: oklch(0.95 0.01 var(--marca-matiz));
+  --card: oklch(0.21 0.025 var(--marca-matiz));
+  --card-foreground: oklch(0.95 0.01 var(--marca-matiz));
+  --popover: oklch(0.23 0.028 var(--marca-matiz));
+  --popover-foreground: oklch(0.95 0.01 var(--marca-matiz));
+  --primary: var(--marca);
+  --primary-foreground: oklch(0.17 0.03 var(--marca-matiz));
+  --secondary: oklch(0.28 0.03 var(--marca-matiz));
+  --secondary-foreground: oklch(0.92 0.015 var(--marca-matiz));
+  --muted: oklch(0.26 0.025 var(--marca-matiz));
+  --muted-foreground: oklch(0.72 0.025 var(--marca-matiz));
+  --accent: var(--marca-suave);
+  --accent-foreground: var(--marca-suave-foreground);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --ring: oklch(0.65 0.15 var(--marca-matiz));
+  --chart-1: oklch(0.7 0.16 var(--marca-matiz));
+  --chart-2: oklch(0.8 0.14 var(--destaque-matiz));
+  --chart-3: oklch(0.72 0.14 155);
+  --chart-4: oklch(0.75 0.1 calc(var(--marca-matiz) + 40));
+  --chart-5: oklch(0.6 0.06 var(--marca-matiz));
+  --sidebar: oklch(0.21 0.025 var(--marca-matiz));
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--marca);
+  --sidebar-primary-foreground: oklch(0.17 0.03 var(--marca-matiz));
+  --sidebar-accent: var(--marca-suave);
+  --sidebar-accent-foreground: var(--marca-suave-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
 }
 
 @layer base {
@@ -127,4 +184,29 @@
   html {
     @apply font-sans;
   }
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+  }
+}
+
+/* Classes próprias com @utility: assim aceitam variantes como hover: e dark:. */
+
+/* Faixa colorida do topo dos cartões e do painel de boas-vindas. */
+@utility bg-gradiente-marca {
+  background-image: var(--gradiente-marca);
+}
+
+/* Sombra suave de cartão de rede social; a forte é para o hover. */
+@utility sombra-cartao {
+  box-shadow:
+    0 1px 2px oklch(0.2 0.03 var(--marca-matiz) / 6%),
+    0 2px 8px -2px oklch(0.2 0.03 var(--marca-matiz) / 6%);
+}
+
+@utility sombra-cartao-forte {
+  box-shadow:
+    0 2px 4px oklch(0.2 0.03 var(--marca-matiz) / 6%),
+    0 12px 28px -8px oklch(0.2 0.05 var(--marca-matiz) / 18%);
 }

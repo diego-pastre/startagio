@@ -36,6 +36,11 @@ export class UpdateStatusVagaService {
       throw new ConflictError("A data limite de inscrição já passou.");
     }
 
+    // A candidatura é a resposta da prova: vaga sem prova não tem como receber candidatos.
+    if (status === "ABERTA" && !vaga.questionario) {
+      throw new ConflictError("Esta vaga não tem prova. Edite a vaga e crie a prova antes de publicar.");
+    }
+
     return this.vagasRepository.updateStatus(id, status);
   }
 }

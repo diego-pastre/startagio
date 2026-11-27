@@ -7,6 +7,9 @@ import { UsuariosRepository } from "@modules/usuarios/infra/prisma/repositories/
 import { RegisterUsuarioService } from "@modules/usuarios/services/usuario/RegisterUsuarioService";
 import { VagasRepository } from "@modules/vagas/infra/prisma/repositories/VagasRepository";
 import { CreateVagaService } from "@modules/vagas/services/vaga/CreateVagaService";
+import { CandidaturasRepository } from "@modules/candidaturas/infra/prisma/repositories/CandidaturasRepository";
+import { ResponderProvaService } from "@modules/candidaturas/services/candidatura/ResponderProvaService";
+import { PerfisEstudanteRepository } from "@modules/estudantes/infra/prisma/repositories/PerfisEstudanteRepository";
 import { BcryptHashProvider } from "@shared/providers/HashProvider/BcryptHashProvider";
 
 // Garante que os @inject("Token") dos services batem com o que está registrado no container.
@@ -21,5 +24,10 @@ describe("container de dependências", () => {
 
     const createVaga = container.resolve(CreateVagaService) as unknown as Record<string, unknown>;
     expect(createVaga.vagasRepository).toBeInstanceOf(VagasRepository);
+
+    const responder = container.resolve(ResponderProvaService) as unknown as Record<string, unknown>;
+    expect(responder.vagasRepository).toBeInstanceOf(VagasRepository);
+    expect(responder.candidaturasRepository).toBeInstanceOf(CandidaturasRepository);
+    expect(responder.perfisRepository).toBeInstanceOf(PerfisEstudanteRepository);
   });
 });

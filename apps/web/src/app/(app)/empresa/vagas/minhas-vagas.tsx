@@ -1,15 +1,25 @@
 "use client";
 
-import { BriefcaseIcon, PlusIcon } from "lucide-react";
+import {
+  BriefcaseBusinessIcon,
+  CalendarClockIcon,
+  ListChecksIcon,
+  MegaphoneIcon,
+  PlusIcon,
+  SparklesIcon,
+  UsersIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { formatarData, TIPO_MODELO_LABEL, type StatusVaga } from "@startagio/contracts";
+import { CartaoDicas } from "@/components/layout/cartao-dicas";
+import { CartaoPerfil } from "@/components/layout/cartao-perfil";
+import { GradeRede } from "@/components/layout/grade-rede";
 import { Paginacao } from "@/components/paginacao";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AcoesStatusVaga } from "@/components/vagas/acoes-status-vaga";
 import { StatusVagaBadge } from "@/components/vagas/status-vaga-badge";
@@ -39,31 +49,36 @@ export function MinhasVagas() {
   let conteudo;
   if (isPending) {
     conteudo = (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3 p-5">
         {[1, 2, 3].map((linha) => (
-          <Skeleton key={linha} className="h-14 w-full" />
+          <Skeleton key={linha} className="h-16 w-full rounded-xl" />
         ))}
       </div>
     );
   } else if (isError) {
     conteudo = (
-      <Alert variant="destructive">
-        <AlertTitle>{mensagemDeErro(error)}</AlertTitle>
-        <AlertDescription>
-          <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
-            Tentar de novo
-          </Button>
-        </AlertDescription>
-      </Alert>
+      <div className="p-5">
+        <Alert variant="destructive">
+          <AlertTitle>{mensagemDeErro(error)}</AlertTitle>
+          <AlertDescription>
+            <Button variant="outline" size="sm" className="mt-2" onClick={() => refetch()}>
+              Tentar de novo
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   } else if (data.total === 0) {
     conteudo = (
-      <Empty className="border">
+      <Empty>
         <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <BriefcaseIcon />
+          <EmptyMedia variant="icon" className="bg-marca-suave text-marca-suave-foreground">
+            <BriefcaseBusinessIcon />
           </EmptyMedia>
           <EmptyTitle>{aba === "TODAS" ? "Nenhuma vaga ainda" : "Nenhuma vaga nesta situação"}</EmptyTitle>
+          {aba === "TODAS" && (
+            <EmptyDescription>Publique a primeira vaga e comece a receber candidatos.</EmptyDescription>
+          )}
         </EmptyHeader>
         {aba === "TODAS" && (
           <EmptyContent>
@@ -79,82 +94,114 @@ export function MinhasVagas() {
     );
   } else {
     conteudo = (
-      <div className={cn("rounded-lg border transition-opacity", isPlaceholderData && "opacity-60")}>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Vaga</TableHead>
-              <TableHead>Situação</TableHead>
-              <TableHead className="hidden md:table-cell">Modalidade</TableHead>
-              <TableHead className="hidden md:table-cell">Bolsa</TableHead>
-              <TableHead className="hidden sm:table-cell">Inscrições até</TableHead>
-              <TableHead className="w-12">
-                <span className="sr-only">Ações</span>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.dados.map((vaga) => (
-              <TableRow key={vaga.id}>
-                <TableCell className="max-w-72 whitespace-normal">
-                  <Link href={`/empresa/vagas/${vaga.id}`} className="font-medium underline-offset-4 hover:underline">
-                    {vaga.titulo}
-                  </Link>
-                  <div className="text-xs text-muted-foreground">{vaga.area_atuacao}</div>
-                </TableCell>
-                <TableCell>
-                  <StatusVagaBadge status={vaga.status} />
-                </TableCell>
-                <TableCell className="hidden md:table-cell">{TIPO_MODELO_LABEL[vaga.tipo_modelo]}</TableCell>
-                <TableCell className="hidden md:table-cell">{textoDaBolsa(vaga.valor_bolsa)}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {vaga.data_limite_inscricao ? formatarData(vaga.data_limite_inscricao) : "Sem data limite"}
-                </TableCell>
-                <TableCell className="text-right">
-                  <AcoesStatusVaga vaga={vaga} modo="menu" />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <ul className={cn("flex flex-col divide-y transition-opacity", isPlaceholderData && "opacity-60")}>
+        {data.dados.map((vaga) => (
+          <li key={vaga.id} className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/40">
+            <span className="hidden size-11 shrink-0 items-center justify-center rounded-xl bg-marca-suave text-marca-suave-foreground sm:flex">
+              <BriefcaseBusinessIcon className="size-5" />
+            </span>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <Link
+                href={`/empresa/vagas/${vaga.id}`}
+                className="line-clamp-2 font-semibold underline-offset-4 hover:text-primary hover:underline"
+              >
+                {vaga.titulo}
+              </Link>
+              <p className="text-xs text-muted-foreground">
+                {vaga.area_atuacao} · {TIPO_MODELO_LABEL[vaga.tipo_modelo]} · {textoDaBolsa(vaga.valor_bolsa)}
+              </p>
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <CalendarClockIcon className="size-3.5" />
+                  {vaga.data_limite_inscricao ? `Até ${formatarData(vaga.data_limite_inscricao)}` : "Sem data limite"}
+                </span>
+                <Link
+                  href={`/empresa/vagas/${vaga.id}/candidatos`}
+                  className="flex items-center gap-1 font-semibold text-primary hover:underline"
+                >
+                  <UsersIcon className="size-3.5" />
+                  {vaga.total_candidaturas} {vaga.total_candidaturas === 1 ? "candidato" : "candidatos"}
+                </Link>
+              </p>
+            </div>
+            <StatusVagaBadge status={vaga.status} />
+            <AcoesStatusVaga vaga={vaga} modo="menu" />
+          </li>
+        ))}
+      </ul>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Minhas vagas</h1>
-        <Button asChild>
-          <Link href="/empresa/vagas/nova">
-            <PlusIcon />
-            Nova vaga
-          </Link>
-        </Button>
-      </div>
-
-      <Tabs
-        value={aba}
-        onValueChange={(valor) => {
-          setAba(valor as Aba);
-          setPagina(1);
-        }}
-      >
-        {/* No celular as abas rolam de lado; a barra de rolagem fica escondida, como no menu do topo. */}
-        <div className="max-w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <TabsList>
-            {ABAS.map((item) => (
-              <TabsTrigger key={item.valor} value={item.valor}>
-                {item.rotulo}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+    <GradeRede
+      esquerda={<CartaoPerfil />}
+      direita={
+        <CartaoDicas
+          titulo="Atraia bons candidatos"
+          dicas={[
+            {
+              icone: SparklesIcon,
+              titulo: "Título claro vende a vaga",
+              texto: "\"Estágio em Desenvolvimento Web\" funciona melhor que \"Estagiário TI\".",
+            },
+            {
+              icone: ListChecksIcon,
+              titulo: "Separe obrigatório de desejável",
+              texto: "Requisitos demais afastam quem está começando.",
+            },
+            {
+              icone: MegaphoneIcon,
+              titulo: "Rascunho antes de publicar",
+              texto: "Salve, revise com calma e publique quando estiver pronta.",
+            },
+          ]}
+        />
+      }
+    >
+      <section className="overflow-hidden rounded-2xl border bg-card sombra-cartao">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight">Minhas vagas</h1>
+            <p className="text-sm text-muted-foreground">
+              {data ? `${data.total} ${data.total === 1 ? "vaga" : "vagas"} nesta lista` : "Gerencie suas publicações"}
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/empresa/vagas/nova">
+              <PlusIcon />
+              Nova vaga
+            </Link>
+          </Button>
         </div>
-      </Tabs>
 
-      {conteudo}
+        <Tabs
+          value={aba}
+          onValueChange={(valor) => {
+            setAba(valor as Aba);
+            setPagina(1);
+          }}
+          className="mt-4"
+        >
+          {/* No celular as abas rolam de lado; a barra de rolagem fica escondida. */}
+          <div className="max-w-full overflow-x-auto border-b px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <TabsList variant="line" className="h-11!">
+              {ABAS.map((item) => (
+                <TabsTrigger
+                  key={item.valor}
+                  value={item.valor}
+                  className="px-3 data-active:text-primary after:bg-primary! after:bottom-[-4px]!"
+                >
+                  {item.rotulo}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+        </Tabs>
+
+        {conteudo}
+      </section>
 
       {data && <Paginacao pagina={data.pagina} totalPaginas={data.total_paginas} aoMudar={setPagina} />}
-    </div>
+    </GradeRede>
   );
 }

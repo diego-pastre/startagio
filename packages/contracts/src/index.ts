@@ -2,6 +2,8 @@ export * from "./constantes";
 export * from "./enums";
 export * from "./schemas/auth";
 export * from "./schemas/empresa";
+export * from "./schemas/estudante";
+export * from "./schemas/questionario";
 export * from "./schemas/vaga";
 export * from "./types/api";
 export * from "./utils/datas";

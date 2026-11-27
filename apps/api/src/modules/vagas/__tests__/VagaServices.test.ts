@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { FakeCandidaturasRepository } from "@modules/candidaturas/repositories/fakes/FakeCandidaturasRepository";
 import { ConflictError, ForbiddenError, NotFoundError } from "@shared/errors/AppError";
 import { FakeVagasRepository } from "../repositories/fakes/FakeVagasRepository";
 import { CreateVagaService } from "../services/vaga/CreateVagaService";
@@ -40,7 +41,7 @@ describe("FindVagaService", () => {
   it("estudante vê vaga aberta, mas não rascunho", async () => {
     const aberta = await criar.execute(empresa1, novaVaga());
     const rascunho = await criar.execute(empresa1, novaVaga((d) => (d.vaga.status = "RASCUNHO")));
-    const buscar = new FindVagaService(repositorio);
+    const buscar = new FindVagaService(repositorio, new FakeCandidaturasRepository(repositorio));
 
     expect((await buscar.execute(estudante, aberta.id)).id).toBe(aberta.id);
     await expect(buscar.execute(estudante, rascunho.id)).rejects.toBeInstanceOf(NotFoundError);
@@ -48,7 +49,7 @@ describe("FindVagaService", () => {
 
   it("rascunho aparece para a empresa dona e para a instituição, mas não para outra empresa", async () => {
     const rascunho = await criar.execute(empresa1, novaVaga((d) => (d.vaga.status = "RASCUNHO")));
-    const buscar = new FindVagaService(repositorio);
+    const buscar = new FindVagaService(repositorio, new FakeCandidaturasRepository(repositorio));
 
     expect((await buscar.execute(empresa1, rascunho.id)).id).toBe(rascunho.id);
     expect((await buscar.execute(instituicao, rascunho.id)).id).toBe(rascunho.id);
@@ -57,6 +58,15 @@ describe("FindVagaService", () => {
 });
 
 describe("UpdateStatusVagaService", () => {
+  it("não publica vaga sem prova (vaga antiga, de antes da fase 3)", async () => {
+    const vaga = await criar.execute(empresa1, novaVaga((d) => (d.vaga.status = "RASCUNHO")));
+    repositorio.removerQuestionario(vaga.id);
+
+    await expect(new UpdateStatusVagaService(repositorio).execute(empresa1, vaga.id, "ABERTA")).rejects.toBeInstanceOf(
+      ConflictError,
+    );
+  });
+
   it("publica o rascunho, pausa e reabre", async () => {
     const vaga = await criar.execute(empresa1, novaVaga((d) => (d.vaga.status = "RASCUNHO")));
     const atualizar = new UpdateStatusVagaService(repositorio);

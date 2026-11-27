@@ -1,4 +1,5 @@
 import type {
+  EditarVagaData,
   FiltrosMinhasVagas,
   FiltrosVagas,
   NovaVagaData,
@@ -16,18 +17,32 @@ function empresaPadrao(id: number): EmpresaDaVaga {
   return { id, nome_fantasia: `Empresa ${id}`, cidade: "Ipatinga", estado: "MG", ramo_atuacao: null, site: null, descricao_empresa: null };
 }
 
-function toResumo({ descricao, beneficios, atualizado_em, perfil_desejado, empresa, ...resumo }: VagaDetalhe): VagaResumo {
+function toResumo({
+  descricao,
+  beneficios,
+  atualizado_em,
+  perfil_desejado,
+  questionario,
+  minha_candidatura,
+  empresa,
+  ...resumo
+}: VagaDetalhe): VagaResumo {
   return { ...resumo, empresa: { id: empresa.id, nome_fantasia: empresa.nome_fantasia, cidade: empresa.cidade, estado: empresa.estado } };
 }
 
 export class FakeVagasRepository implements IVagasRepository {
   private vagas: VagaDetalhe[] = [];
+  /** O que foi enviado na criação ou na última edição, para o formulário de edição. */
+  private formularios = new Map<number, EditarVagaData>();
   // Cada vaga criada fica 1 minuto mais nova que a anterior, para a ordenação ser previsível.
   private relogio = Date.parse("2026-01-01T12:00:00.000Z");
 
   constructor(private empresas: Record<number, EmpresaDaVaga> = {}) {}
 
-  async create(empresaId: number, { vaga, perfil_desejado, qualificacoes_cursos }: NovaVagaData): Promise<VagaDetalhe> {
+  async create(
+    empresaId: number,
+    { vaga, perfil_desejado, qualificacoes_cursos, questionario }: NovaVagaData,
+  ): Promise<VagaDetalhe> {
     this.relogio += 60_000;
     const agora = new Date(this.relogio).toISOString();
     const nova: VagaDetalhe = {
@@ -39,9 +54,42 @@ export class FakeVagasRepository implements IVagasRepository {
       nivel_formacao: perfil_desejado.nivel_formacao,
       perfil_desejado: { ...perfil_desejado },
       cursos: qualificacoes_cursos.map((curso) => ({ ...curso })),
+      questionario: {
+        titulo: questionario.titulo,
+        nota_minima_aprovacao: questionario.nota_minima_aprovacao,
+        total_questoes: questionario.questoes.length,
+      },
+      minha_candidatura: null,
+      total_candidaturas: 0,
     };
     this.vagas.push(nova);
+    this.formularios.set(nova.id, { vaga, perfil_desejado, qualificacoes_cursos, questionario });
     return nova;
+  }
+
+  async update(id: number, data: EditarVagaData): Promise<VagaDetalhe> {
+    const vaga = this.vagas.find((item) => item.id === id);
+    if (!vaga) throw new Error(`Vaga ${id} não existe no fake`);
+    const anterior = this.formularios.get(id);
+    const questionario = data.questionario ?? anterior?.questionario;
+    Object.assign(vaga, data.vaga, {
+      perfil_desejado: { ...data.perfil_desejado },
+      nivel_formacao: data.perfil_desejado.nivel_formacao,
+      cursos: data.qualificacoes_cursos.map((curso) => ({ ...curso })),
+      questionario: questionario
+        ? {
+            titulo: questionario.titulo,
+            nota_minima_aprovacao: questionario.nota_minima_aprovacao,
+            total_questoes: questionario.questoes.length,
+          }
+        : null,
+    });
+    this.formularios.set(id, { ...data, questionario });
+    return vaga;
+  }
+
+  async findFormulario(id: number): Promise<EditarVagaData | null> {
+    return this.formularios.get(id) ?? null;
   }
 
   async findById(id: number): Promise<VagaDetalhe | null> {
@@ -86,6 +134,20 @@ export class FakeVagasRepository implements IVagasRepository {
       areas: ordenar(dados.map((vaga) => vaga.area_atuacao)),
       cursos: ordenar(dados.flatMap((vaga) => vaga.cursos.map((curso) => curso.nome_curso))),
     };
+  }
+
+  /** Chamado pelo FakeCandidaturasRepository a cada candidatura nova. */
+  contarCandidatura(id: number): void {
+    const vaga = this.vagas.find((item) => item.id === id);
+    if (vaga) vaga.total_candidaturas += 1;
+  }
+
+  /** Só para testes: simula uma vaga antiga, criada antes de a prova ser obrigatória. */
+  removerQuestionario(id: number): void {
+    const vaga = this.vagas.find((item) => item.id === id);
+    if (vaga) vaga.questionario = null;
+    const formulario = this.formularios.get(id);
+    if (formulario) this.formularios.set(id, { ...formulario, questionario: undefined });
   }
 
   /** Só para testes: simula uma vaga cuja data limite já passou. */

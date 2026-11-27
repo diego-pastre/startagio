@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { filtrosVagasSchema, novaVagaSchema, podeMudarStatus } from "./vaga";
 
-// Exemplo da seção 7.1 do PDF (sem o questionário, que entra na fase 3), com valores como o formulário envia.
+// Exemplo da seção 7.1 do PDF, com valores como o formulário envia.
 const doFormulario = {
   vaga: {
     titulo: "Estágio em Desenvolvimento de Sistemas Web",
@@ -32,6 +32,21 @@ const doFormulario = {
     { nome_curso: "Sistemas de Informação", grau: "GRADUACAO", obrigatorio: true },
     { nome_curso: "Engenharia de Software", grau: "GRADUACAO", obrigatorio: false },
   ],
+  questionario: {
+    titulo: "Avaliação Técnica de Banco de Dados e Desenvolvimento Web",
+    instrucoes: "Responda às questões abaixo com atenção. A nota mínima recomendada é 6.00.",
+    nota_minima_aprovacao: "6,00",
+    questoes: [
+      {
+        peso_nota: "2",
+        enunciado: {
+          pergunta: "Qual comando SQL recupera registros combinando duas tabelas apenas quando há correspondência em ambas?",
+          alternativas: { A: "LEFT JOIN", B: "INNER JOIN", C: "OUTER UNION", D: "GROUP BY" },
+          correta: "B",
+        },
+      },
+    ],
+  },
 };
 
 function comAlteracao(alterar: (dados: typeof doFormulario) => void) {

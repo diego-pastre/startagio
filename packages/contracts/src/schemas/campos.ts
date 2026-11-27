@@ -72,6 +72,20 @@ export const inteiroOpcional = (min: number, max: number, unidade = "") =>
     .transform((valor) => (vazio(valor) ? null : paraNumero(valor as string | number)))
     .pipe(numeroInteiro(min, max, unidade).nullable());
 
+/** Decimal com 2 casas entre min e max (aceita "6,5" ou 6.5). Vazio vira o valor padrão. */
+export const decimal = (min: number, max: number, padrao: number) =>
+  z
+    .union([z.number(), z.string()])
+    .nullish()
+    .transform((valor) => (vazio(valor) ? padrao : paraNumero(valor as string | number)))
+    .pipe(
+      z
+        .number({ error: "Informe um número" })
+        .min(min, `Mínimo de ${String(min).replace(".", ",")}`)
+        .max(max, `Máximo de ${String(max).replace(".", ",")}`),
+    )
+    .transform((valor) => Math.round(valor * 100) / 100);
+
 /** Dinheiro com 2 casas: aceita "1.350,00" (formulário) ou 1350 (JSON). Vazio vira 0. */
 export const dinheiro = (maximo: number) =>
   z

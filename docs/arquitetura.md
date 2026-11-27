@@ -70,8 +70,17 @@ docs/
 | GET | `/api/vagas/:id` | logado | detalhe. Vaga que não está aberta só aparece para a empresa dona e para a instituição; para os outros, `404` |
 | PATCH | `/api/vagas/:id/status` | `pode_criar_vagas` | publicar, pausar, reabrir ou encerrar, conforme `TRANSICOES_STATUS_VAGA` |
 | DELETE | `/api/vagas/:id` | `pode_criar_vagas` | exclusão lógica: só muda o status para Encerrada (seção 6.4 do PDF) |
+| GET | `/api/vagas/:id/questionario` | `pode_candidatar` | prova da vaga **sem** a alternativa correta; 409 se o estudante já fez ou a vaga não tem prova |
+| POST | `/api/vagas/:id/responder` | `pode_candidatar` | corrige, calcula nota e afinidade e grava em `pontuacoes` (`{ "respostas": { "<id da questão>": "B" } }`) |
+| PUT | `/api/vagas/:id` | `pode_criar_vagas` | edita a vaga; sem `questionario`, a prova fica como está (obrigatório quando já há candidatos) |
+| GET | `/api/vagas/:id/formulario` | `pode_criar_vagas` | a vaga completa, com gabarito, para a empresa dona editar, e se a prova está travada |
+| GET | `/api/vagas/:id/candidatos` | `pode_ver_candidatos` | ranking da vaga (Tela 4), com contagem por status, filtro `status` e paginação |
+| PATCH | `/api/pontuacoes/:id/status` | `pode_ver_candidatos` | aprova, reprova ou volta para análise (empresa dona) |
+| GET | `/api/candidaturas` | `pode_candidatar` | "Minhas candidaturas", com filtro `status` e paginação |
+| GET | `/api/estudantes/perfil` | Estudante | perfil acadêmico; `404` se ainda não foi preenchido |
+| PUT | `/api/estudantes/perfil` | Estudante | cria ou atualiza o perfil acadêmico |
 
-O corpo do `POST /api/vagas` segue o exemplo da seção 7.1 do PDF (`vaga`, `perfil_desejado`, `qualificacoes_cursos`), sem o questionário, que entra na fase 3. Os enums usam os códigos (`HIBRIDO`, `BACHARELADO`), não os rótulos com acento.
+O corpo do `POST /api/vagas` segue o exemplo da seção 7.1 do PDF (`vaga`, `perfil_desejado`, `qualificacoes_cursos` e `questionario` com as `questoes`). A prova é obrigatória. Os enums usam os códigos (`HIBRIDO`, `BACHARELADO`), não os rótulos com acento.
 
 ## Roteiro (seção 9 do PDF)
 
@@ -79,10 +88,20 @@ O corpo do `POST /api/vagas` segue o exemplo da seção 7.1 do PDF (`vaga`, `per
 |---|---|---|
 | 1. Identidade e acesso | **feita** | cadastro, login, sessão, permissões, menu por perfil, ficha da empresa com ViaCEP |
 | 2. Gestão de vagas | **feita** | assistente de vaga em 3 etapas (`vagas`, `perfil_desejado`, `qualificacoes_cursos`) com rascunho ou publicação, "Minhas vagas" com publicar/pausar/reabrir/encerrar, mural com filtros e paginação, página de detalhes |
-| 3. Motor de avaliação | próxima | etapa 4 do assistente (questionário), prova online sem gabarito, cálculo da nota e da afinidade, "Minhas candidaturas" |
-| 4. Seleção e homologação | a fazer | ranking de candidatos (TanStack Table), aprovação e reprovação, painel da instituição |
+| 3. Motor de avaliação | **feita** | etapa 4 do assistente (construtor da prova), perfil acadêmico do estudante, prova online sem gabarito, cálculo da nota e da afinidade, "Minhas candidaturas" |
+| 4. Seleção e homologação | em andamento: edição de vaga e ranking da empresa feitos; falta o painel da instituição | ranking de candidatos (TanStack Table), aprovação e reprovação, painel da instituição |
 
-Antes das fases 3 e 4, resolver as pendências de [`banco-de-dados.md`](banco-de-dados.md#pendências-para-decidir-antes-das-próximas-fases).
+Antes da fase 4, resolver a pendência da instituição em [`banco-de-dados.md`](banco-de-dados.md#pendências-para-decidir-antes-das-próximas-fases). As regras da prova e a fórmula da afinidade estão em [`banco-de-dados.md`](banco-de-dados.md#prova-e-candidatura-seção-63-do-pdf).
+
+## Visual (identidade provisória)
+
+O site tem cara de rede social: barra no topo com ícones (no celular, uma barra fixa embaixo) e páginas em três colunas, com o cartão de perfil à esquerda, o conteúdo no meio e dicas à direita (`components/layout/grade-rede.tsx`).
+
+A cor e a logo oficiais ainda não foram definidas. Para trocar:
+
+- **Cor:** em `apps/web/src/app/globals.css`, mude `--marca-matiz` (matiz OKLCH, de 0 a 360). Botões, links, faixas em gradiente e o tema escuro saem desse número. `--destaque-matiz` é a cor de apoio do gradiente.
+- **Logo:** troque o `<MarcaSimbolo>` em `apps/web/src/components/logo.tsx` pelo SVG ou imagem oficial. O resto do site usa o componente `<Logo>`.
+- **Avatares:** sem foto, pessoas e empresas aparecem com as iniciais sobre uma cor que sai do nome (`utils/avatar.ts`). Assim cada empresa fica reconhecível no mural.
 
 ## Pontos de atenção
 
