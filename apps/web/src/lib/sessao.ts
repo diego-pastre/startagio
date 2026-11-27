@@ -3,9 +3,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { COOKIE_SESSAO, type NivelAcesso, type UsuarioAutenticado } from "@startagio/contracts";
+import { API_URL } from "@/config/env";
 import { inicioDoPerfil } from "./rotas";
-
-const API_URL = process.env.API_URL ?? "http://localhost:3333";
 
 // Lê o cookie da requisição, então quem chama precisa estar dentro de um <Suspense>
 // (regra do Cache Components). O cache() evita repetir a consulta na mesma requisição.
